@@ -1,38 +1,53 @@
-ENTRY(_start)
+OUTPUT_ARCH("riscv")
+
+ENTRY( _start )
+
+MEMORY
+{
+    ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 128M
+}
+
+PHDRS
+{
+    text PT_LOAD;
+    data PT_LOAD;
+    bss PT_LOAD;
+    kstack PT_LOAD;
+}
 
 SECTIONS
 {
-    .text 0x80000000 : {
-        KEEP(*(.text.boot))  
-        *(.text*) 
-    }
-    .rodata : {
-        . = ALIGN(8);
-        *(.rodata*)
-        *(.srodata*)
-        . = ALIGN(8);
-    }
-    .data : { 
-        . = ALIGN(8);
-        *(.sdata*)
-        *(.data*)
-        . = ALIGN(8);
-    } 
-    .bss : {
-        . = ALIGN(8);
-        _bss_start = .;
-        *(.sbss*)
-        *(.bss*)
-        *(COMMON)
-        . = ALIGN(8);
-        _bss_end = .;
-    }
+  .text : {
+    PROVIDE(_text_start = .);
+    *(.text.init) *(.text .text.*)
+    PROVIDE(_text_end = .);
+    } >ram AT>ram :text
 
-    .kstack : {
-        . = ALIGN(16);
-        . += 4K;
-        _stack_start = .;
-    }
+  .rodata : {
+    PROVIDE(_rodata_start = .);
+    *(.rodata .rodata.*)
+    PROVIDE(_rodata_end = .);
+    } >ram AT>ram :text
 
-    /DISCARD/ : { *(.comment .note .eh_frame) }
+  .data : {
+    . = ALIGN(4096);
+    PROVIDE(_data_start = .);
+    *(.sdata .sdata.*) *(.data .data.*)
+    PROVIDE(_data_end = .);
+    } >ram AT>ram :data
+
+  .bss : {
+    PROVIDE(_bss_start = .);
+    *(.sbss .sbss.*) *(.bss .bss.*)
+    PROVIDE(_bss_end = .);
+    } >ram AT>ram :bss
+  
+  .kstack : {
+    . = ALIGN(16);
+    . += 4K;
+    PROVIDE(_stack_start = .);
+    } >ram AT>ram :kstack
+    
+    PROVIDE(_memory_start = ORIGIN(ram));
+    PROVIDE(_memory_end = ORIGIN(ram) + LENGTH(ram));
 }
