@@ -10,6 +10,7 @@ MEMORY
 PHDRS
 {
     text PT_LOAD;
+    rodata PT_LOAD;
     data PT_LOAD;
     bss PT_LOAD;
     kstack PT_LOAD;
@@ -27,7 +28,7 @@ SECTIONS
     PROVIDE(_rodata_start = .);
     *(.rodata .rodata.*)
     PROVIDE(_rodata_end = .);
-    } >ram AT>ram :text
+    } >ram AT>ram :rodata
 
   .data : {
     . = ALIGN(4096);
