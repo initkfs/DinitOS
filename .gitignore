@@ -1,0 +1,7 @@
+/build/
+/dub.selections.json
+/*.o
+/*.obj
+/*.list
+/*.dtb
+/*.dts

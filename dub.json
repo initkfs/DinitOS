@@ -1,0 +1,37 @@
+{
+    "authors": [
+        "initkfs"
+    ],
+    "copyright": "Copyright © 2023, initkfs",
+    "description": "Simple toy operating system.",
+    "license": "proprietary",
+    "name": "kassios",
+    "configurations": [
+        {
+            "name": "default",
+            "buildOptions": [],
+            "versions": [],
+            "postBuildCommands": [],
+        }
+    ],
+    "dflags-ldc": [
+        "-betterC",
+        "-Oz",
+        "-mtriple=riscv64-unknown-elf",
+        "-mattr=+m,+a,+c",
+        "--code-model=medium",
+        "--nodefaultlib",
+        "--function-sections",
+        "--data-sections"
+    ],
+    "targetType": "library",
+    "targetName": "kernel",
+    "targetPath": "./build",
+    "sourcePaths": [
+        "./src"
+    ],
+    "importPaths": [
+        "./src"
+    ],
+    "dependencies": {}
+}
