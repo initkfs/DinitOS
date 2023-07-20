@@ -5,3 +5,5 @@
 /*.list
 /*.dtb
 /*.dts
+/.gdbinit
+/gdb.sh

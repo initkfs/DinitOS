@@ -4,25 +4,41 @@
     ],
     "copyright": "Copyright © 2023, initkfs",
     "description": "Simple toy operating system.",
-    "license": "proprietary",
+    "license": "",
     "name": "kassios",
     "configurations": [
         {
-            "name": "default",
+            "name": "riscv32",
             "buildOptions": [],
-            "versions": [],
+            "versions": [
+                "Riscv32"
+            ],
             "postBuildCommands": [],
+            "dflags-ldc": [
+                "-mtriple=riscv32-unknown-elf"
+            ]
+        },
+        {
+            "name": "riscv64",
+            "buildOptions": [],
+            "versions": [
+                "Riscv64"
+            ],
+            "postBuildCommands": [],
+            "dflags-ldc": [
+                "-mtriple=riscv64-unknown-elf"
+            ]
         }
     ],
     "dflags-ldc": [
         "-betterC",
         "-Oz",
-        "-mtriple=riscv64-unknown-elf",
         "-mattr=+m,+a,+c",
         "--code-model=medium",
         "--nodefaultlib",
         "--function-sections",
-        "--data-sections"
+        "--data-sections",
+        "--relocation-model=static"
     ],
     "targetType": "library",
     "targetName": "kernel",
