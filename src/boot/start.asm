@@ -2,9 +2,12 @@
 
 .globl _start
 _start:
+    csrr a0, mhartid
+    bnez a0, _hlt
     la sp, _stack_start
     call dstart
 _hlt:
+    wfi
     j _hlt
 
 .macro contextSave base
@@ -81,5 +84,56 @@ contextSwitch:
     contextLoad a1  # a1 new context ptr
     ret
 
+.globl systemTimer
+#timer handler(reg epc, reg cause)
+.align(4)
+systemTimer:
+	csrr	a0, mepc
+	csrr	a1, mcause
+	call	timerHandler
+	csrw	mepc, a0
+	mret
+
+.globl setMInterruptVectorTimer
+setMInterruptVectorTimer:
+    la a0, systemTimer
+    csrw mtvec, a0
+    ret
+.globl getHartId
+getHartId:
+    csrr a0, mhartid
+    ret
+.globl getMStatus
+getMStatus:
+    csrr a0, mstatus
+    ret
+.globl setMStatus
+setMStatus:
+    csrw mstatus, a0
+    ret
+.globl setExceptionCounter
+setExceptionCounter:
+    csrw mepc, a0
+    ret
+.globl getExceptionCounter
+getExceptionCounter:
+    csrr a0, mepc
+    ret
+.globl setMScratch
+setMScratch:
+    csrw mscratch, a0
+    ret
+.globl setMInterruptVector
+setMInterruptVector:
+    csrw mtvec, a0
+    ret
+.globl getMInterruptEnable
+getMInterruptEnable:
+    csrr a0, mie
+    ret
+.globl setMInterruptEnable
+setMInterruptEnable:
+    csrw mie, a0
+    ret
 
     

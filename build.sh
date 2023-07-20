@@ -117,5 +117,5 @@ if [[ -z $emulator ]]; then
     exit 1
 fi
 
-"$emulator" -serial stdio -bios none -machine virt -kernel "$kernelBin" 
+"$emulator" -smp 2 -serial stdio -bios none -machine virt -kernel "$kernelBin" 
 #-s -S

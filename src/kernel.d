@@ -11,6 +11,8 @@ __gshared extern (C)
 
 import uart;
 import task;
+import timer;
+import interrupt;
 
 extern (C) void dstart()
 {
@@ -23,18 +25,26 @@ extern (C) void dstart()
 
     println("Os start");
 
-    taskCreate(&task0);
-    taskCreate(&task1);
+    timerInit;
 
-    size_t currentTask = 0;
-    while (1)
-    {
-        println("Run next task.");
-        switchContextToTask(currentTask);
-        println("Back to OS");
-        currentTask = (currentTask + 1) % taskCount;
-        println("---");
+    println("Start loop");
+
+    while(true){
+
     }
+
+    // taskCreate(&task0);
+    // taskCreate(&task1);
+
+    // size_t currentTask = 0;
+    // while (1)
+    // {
+    //     println("Run next task.");
+    //     switchContextToTask(currentTask);
+    //     println("Back to OS");
+    //     currentTask = (currentTask + 1) % taskCount;
+    //     println("---");
+    // }
 
     //println("Os end");
 }
