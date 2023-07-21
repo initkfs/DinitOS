@@ -3,14 +3,15 @@
  */
 module interrupt;
 
-enum maxCpu = 8;
+enum size_t maxCpu = 8;
 enum clintBase = 0x2000000;
 enum clintCompareRegHurtOffset = 0x4000;
 enum clintTimerRegOffset = 0xBFF8;
+enum numCores = 2;
 
 ulong mtimecmpForHart(size_t hartid)
 {
-    return clintBase + clintCompareRegHurtOffset + 4 * (hartid);
+    return clintBase + clintCompareRegHurtOffset + numCores * (hartid);
 }
 
 ulong mtime()

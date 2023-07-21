@@ -13,6 +13,7 @@ import uart;
 import task;
 import timer;
 import interrupt;
+import trap;
 
 extern (C) void dstart()
 {
@@ -24,27 +25,24 @@ extern (C) void dstart()
     }
 
     println("Os start");
-
+	
+    trapInit;
+    println("Init traps");
     timerInit;
+    println("Init timers");
 
-    println("Start loop");
+    taskCreate(&task0);
+    taskCreate(&task1);
 
-    while(true){
-
+    size_t currentTask = 0;
+    while (1)
+    {
+        println("Run next task.");
+        switchContextToTask(currentTask);
+        println("Back to OS");
+        currentTask = (currentTask + 1) % taskCount;
+        println("---");
     }
-
-    // taskCreate(&task0);
-    // taskCreate(&task1);
-
-    // size_t currentTask = 0;
-    // while (1)
-    // {
-    //     println("Run next task.");
-    //     switchContextToTask(currentTask);
-    //     println("Back to OS");
-    //     currentTask = (currentTask + 1) % taskCount;
-    //     println("---");
-    // }
 
     //println("Os end");
 }
@@ -52,32 +50,27 @@ extern (C) void dstart()
 void task0()
 {
     println("Task0 created.");
-    println("Task0: return to kernel mode.");
-    switchContextToOs();
     while (true)
     {
         println("Task0: running...");
         delayTicks;
-        switchContextToOs();
     }
 }
 
 void task1()
 {
     println("Task1 created.");
-    println("Task1: return to kernel mode.");
-    switchContextToOs();
     while (true)
     {
         println("Task1: running...");
         delayTicks;
-        switchContextToOs();
     }
 }
 
-void delayTicks(int count = 5000)
+void delayTicks(int count = 1000)
 {
-    while (count--)
+    long counter = count * 50000;
+    while (counter--)
     {
     }
 }

@@ -47,11 +47,13 @@ size_t taskCreate(void function() t)
 
 void switchContextToTask(size_t i) {
 	contextCurrent = &tasks[i];
-	contextSwitch(&contextOs, &tasks[i]);
+	contextSwitch(&contextOs, contextCurrent);
 }
 
 void switchContextToOs() {
     //back to os
+    import uart;
+    println("Switch context to os");
 	RegContext* ctx = contextCurrent;
 	contextCurrent = &contextOs;
 	contextSwitch(ctx, &contextOs);
