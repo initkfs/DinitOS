@@ -14,6 +14,10 @@ import task;
 import timer;
 import interrupt;
 import trap;
+import locks;
+
+__gshared int sharedCounter = 500;
+__gshared Lock lock;
 
 extern (C) void dstart()
 {
@@ -30,6 +34,8 @@ extern (C) void dstart()
     println("Init traps");
     timerInit;
     println("Init timers");
+
+    initLock(&lock);
 
     taskCreate(&task0);
     taskCreate(&task1);
@@ -53,6 +59,13 @@ void task0()
     while (true)
     {
         println("Task0: running...");
+        foreach (i; 0..50)
+		{
+			acquire(&lock);
+			sharedCounter++;
+			free(&lock);
+			delayTicks(100);
+		}
         delayTicks;
     }
 }
@@ -63,6 +76,10 @@ void task1()
     while (true)
     {
         println("Task1: running...");
+        println("Acquisition of a lock.");
+		acquire(&lock);
+		println("Locked");
+		free(&lock);
         delayTicks;
     }
 }

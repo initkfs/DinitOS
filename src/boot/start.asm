@@ -244,6 +244,14 @@ trapVector:
 	regLoad t6
 	mret
 
+.globl swapAtomic
+.align 4
+swapAtomic:
+    li a5, 1
+    amoswap.w.aq a5, a5, 0(a0)
+    mv a0, a5
+    ret
+
 .globl setMInterruptVectorTrap
 setMInterruptVectorTrap:
     la a0, trapVector

@@ -47,3 +47,13 @@ extern (C) size_t getMInterruptEnable();
 extern (C) void setMInterruptEnable(size_t);
 
 extern (C) void setMInterruptVectorTimer();
+
+void disableInterrupts()
+{
+    setMInterruptEnable(~((~getMInterruptEnable) | (1 << 7)));
+}
+
+void enableInterrupts()
+{
+    setMInterruptEnable(getMInterruptEnable | MIE_MTIE);
+}
