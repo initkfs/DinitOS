@@ -3,18 +3,10 @@
  */
 module uart;
 
-import object;
-
-struct Ns16650a(ubyte* base) {
-    static void tx(ubyte b) {
-        volatileStore(base, b);
-    }
-}
-
-alias Uart = Ns16650a!(cast(ubyte*) 0x10000000);
+import Ns16650a = os.io.ns16550a;
 
 void printElem(char c) {
-    Uart.tx(c);
+    Ns16650a.writeTx(c);
 }
 
 void printElem(string s) {
