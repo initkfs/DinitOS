@@ -3,6 +3,8 @@
  */
 module dstart;
 
+import Syslog = os.core.logger.syslog;
+
 __gshared extern (C)
 {
     size_t _bss_start;
@@ -28,27 +30,29 @@ extern (C) void dstart()
         *bss++ = 0;
     }
 
-    println("Os start");
+    Syslog.setLoad(true);
+
+    Syslog.info("Os start");
 	
     trapInit;
-    println("Init traps");
-    timerInit;
-    println("Init timers");
+    Syslog.info("Init traps");
+    //timerInit;
+    //println("Init timers");
 
-    initLock(&lock);
+    //initLock(&lock);
 
-    taskCreate(&task0);
-    taskCreate(&task1);
+    // taskCreate(&task0);
+    // taskCreate(&task1);
 
-    size_t currentTask = 0;
-    while (1)
-    {
-        println("Run next task.");
-        switchContextToTask(currentTask);
-        println("Back to OS");
-        currentTask = (currentTask + 1) % taskCount;
-        println("---");
-    }
+    // size_t currentTask = 0;
+    // while (1)
+    // {
+    //     println("Run next task.");
+    //     switchContextToTask(currentTask);
+    //     println("Back to OS");
+    //     currentTask = (currentTask + 1) % taskCount;
+    //     println("---");
+    // }
 
     //println("Os end");
 }
