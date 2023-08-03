@@ -3,7 +3,7 @@
  */
 module uart;
 
-import Ns16650a = os.io.ns16550a;
+import Ns16650a = os.core.io.ns16550a;
 
 void printElem(char c) {
     Ns16650a.writeTx(c);

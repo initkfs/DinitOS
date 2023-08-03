@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module locks;
+module os.core.sync.spinlock;
 
 import interrupt;
 

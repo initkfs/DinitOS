@@ -11,15 +11,17 @@ __gshared extern (C)
     size_t _bss_end;
 }
 
+import Spinlock = os.core.sync.spinlock;
+
 import uart;
 import task;
 import timer;
 import interrupt;
 import trap;
-import locks;
 
-__gshared int sharedCounter = 500;
-__gshared Lock lock;
+__gshared int sharedCounter;
+
+__gshared Spinlock.Lock lock;
 
 extern (C) void dstart()
 {
@@ -33,57 +35,50 @@ extern (C) void dstart()
     Syslog.setLoad(true);
 
     Syslog.info("Os start");
-	
+
     trapInit;
     Syslog.info("Init traps");
-    //timerInit;
-    //println("Init timers");
+    timerInit;
+    Syslog.info("Init timers");
 
-    //initLock(&lock);
+    Spinlock.initLock(&lock);
 
-    // taskCreate(&task0);
-    // taskCreate(&task1);
+    taskCreate(&task0);
+    taskCreate(&task1);
 
-    // size_t currentTask = 0;
-    // while (1)
-    // {
-    //     println("Run next task.");
-    //     switchContextToTask(currentTask);
-    //     println("Back to OS");
-    //     currentTask = (currentTask + 1) % taskCount;
-    //     println("---");
-    // }
-
-    //println("Os end");
+    size_t currentTask = 0;
+    while (true)
+    {
+        Syslog.trace("Run next task.");
+        switchContextToTask(currentTask);
+        Syslog.trace("Back to OS");
+        currentTask = (currentTask + 1) % taskCount;
+    }
 }
 
 void task0()
 {
-    println("Task0 created.");
+    Syslog.trace("Task0 created.");
     while (true)
     {
-        println("Task0: running...");
-        foreach (i; 0..50)
-		{
-			acquire(&lock);
-			sharedCounter++;
-			free(&lock);
-			delayTicks(100);
-		}
+        Syslog.trace("Task0: running...");
+        foreach (i; 0 .. 50)
+        {
+            Spinlock.acquire(&lock);
+            sharedCounter++;
+            Spinlock.free(&lock);
+            delayTicks(100);
+        }
         delayTicks;
     }
 }
 
 void task1()
 {
-    println("Task1 created.");
+    Syslog.trace("Task1 created.");
     while (true)
     {
-        println("Task1: running...");
-        println("Acquisition of a lock.");
-		acquire(&lock);
-		println("Locked");
-		free(&lock);
+        Syslog.trace("Task1: running...");
         delayTicks;
     }
 }

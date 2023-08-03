@@ -16,7 +16,7 @@ private
 //TODO versions
 protected
 {
-    import Ns16650a = os.io.ns16550a;
+    import Ns16650a = os.core.io.ns16550a;
 
     void logWrite(ubyte b)
     {

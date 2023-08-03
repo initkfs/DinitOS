@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.io.ns16550a;
+module os.core.io.ns16550a;
 
 import Volatile = os.core.volatile;
 
