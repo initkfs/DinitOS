@@ -1,5 +1,7 @@
 .section ".text.boot"
-
+/**
+ * Author: initkfs
+ */
 .globl _start
 _start:
     csrr a0, mhartid
@@ -10,7 +12,7 @@ _hlt:
     wfi
     j _hlt
 
-.macro contextSave base
+.macro context_save base
 .ifdef rv32
     sw ra, 0(\base)
     sw sp, 4(\base)
@@ -44,7 +46,7 @@ _hlt:
 .endif  
 .endm
 
-.macro contextLoad base
+.macro context_load base
 .ifdef rv32
     lw ra, 0(\base)
     lw sp, 4(\base)
@@ -78,7 +80,7 @@ _hlt:
 .endif
 .endm
 
-.macro regSave base
+.macro reg_save base
 .ifdef rv32
     sw ra, 0(\base)
     sw sp, 4(\base)
@@ -146,7 +148,7 @@ _hlt:
 .endif  
 .endm
 
-.macro regLoad base
+.macro reg_load base
 .ifdef rv32
     lw ra, 0(\base)
     lw sp, 4(\base)
@@ -214,88 +216,88 @@ _hlt:
 .endif  
 .endm
 
-.globl contextSwitch
-contextSwitch:
-    contextSave a0  # a0 old context ptr
-    contextLoad a1  # a1 new context ptr
+.globl context_switch
+context_switch:
+    context_save a0  # a0 old context ptr
+    context_load a1  # a1 new context ptr
     ret
 
-.globl systemTimer
-#systemTimer(size_t epc, size_t cause)
+.globl system_timer
+#system_timer(size_t epc, size_t cause)
 .align(4)
-systemTimer:
+system_timer:
 	csrr	a0, mepc
 	csrr	a1, mcause
-	call	timerHandler
+	call	timer_handler #from kernel
 	csrw	mepc, a0
 	mret
 
-.globl trapVector
+.globl trap_vector
 .align 4
-trapVector:
+trap_vector:
 	csrrw	t6, mscratch, t6
-    regSave t6
+    reg_save t6
 	csrw	mscratch, t6
 	csrr	a0, mepc
 	csrr	a1, mcause
-	call	trapHandler
+	call	trap_handler #from kernel
 	csrw	mepc, a0
 	csrr	t6, mscratch
-	regLoad t6
+	reg_load t6
 	mret
 
-.globl swapAtomic
+.globl swap_atomic
 .align 4
-swapAtomic:
+swap_atomic:
     li a5, 1
     amoswap.w.aq a5, a5, 0(a0)
     mv a0, a5
     ret
 
-.globl setMInterruptVectorTrap
-setMInterruptVectorTrap:
-    la a0, trapVector
+.globl set_minterrupt_vector_trap
+set_minterrupt_vector_trap:
+    la a0, trap_vector
     csrw mtvec, a0
     ret
-.globl setMInterruptVectorTimer
-setMInterruptVectorTimer:
-    la a0, systemTimer
+.globl set_minterrupt_vector_timer
+set_minterrupt_vector_timer:
+    la a0, system_timer
     csrw mtvec, a0
     ret
-.globl getHartId
-getHartId:
+.globl get_hart_id
+get_hart_id:
     csrr a0, mhartid
     ret
-.globl getMStatus
-getMStatus:
+.globl get_mstatus
+get_mstatus:
     csrr a0, mstatus
     ret
-.globl setMStatus
-setMStatus:
+.globl set_mstatus
+set_mstatus:
     csrw mstatus, a0
     ret
-.globl setExceptionCounter
-setExceptionCounter:
+.globl set_exception_counter
+set_exception_counter:
     csrw mepc, a0
     ret
-.globl getExceptionCounter
-getExceptionCounter:
+.globl get_exception_counter
+get_exception_counter:
     csrr a0, mepc
     ret
-.globl setMScratch
-setMScratch:
+.globl set_mscratch
+set_mscratch:
     csrw mscratch, a0
     ret
-.globl setMInterruptVector
-setMInterruptVector:
+.globl set_minterrupt_vector
+set_minterrupt_vector:
     csrw mtvec, a0
     ret
-.globl getMInterruptEnable
-getMInterruptEnable:
+.globl get_minterrupt_enable
+get_minterrupt_enable:
     csrr a0, mie
     ret
-.globl setMInterruptEnable
-setMInterruptEnable:
+.globl set_minterrupt_enable
+set_minterrupt_enable:
     csrw mie, a0
     ret
 

@@ -12,28 +12,28 @@ version (LDC)
     }
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ubyte volatileLoad(ubyte* ptr);
+    ubyte load(ubyte* ptr);
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ushort volatileLoad(ushort* ptr);
+    ushort load(ushort* ptr);
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    uint volatileLoad(uint* ptr);
+    uint load(uint* ptr);
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ulong volatileLoad(ulong* ptr);
+    ulong load(ulong* ptr);
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void volatileStore(ubyte* ptr, ubyte value);
+    void save(ubyte* ptr, ubyte value);
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void volatileStore(ushort* ptr, ushort value);
+    void save(ushort* ptr, ushort value);
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void volatileStore(uint* ptr, uint value);
+    void save(uint* ptr, uint value);
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void volatileStore(ulong* ptr, ulong value);
+    void save(ulong* ptr, ulong value);
 
     unittest
     {
@@ -43,8 +43,8 @@ version (LDC)
         {
             Type t;
             Type* tptr = &t;
-            volatileStore(tptr, 147);
-            Type result = volatileLoad(tptr);
+            safe(tptr, 147);
+            Type result = load(tptr);
             assert(t == result);
         }
     }

@@ -7,10 +7,10 @@ import os.core.logger.logger_core;
 
 import std.traits;
 
-private
+private __gshared
 {
-    __gshared LogLevel logLevel;
-    __gshared bool load;
+    LogLevel logLevel;
+    bool load;
 }
 
 //TODO versions

@@ -30,7 +30,7 @@ kernelBin=${kernelFile}.bin
 
 POSITIONAL_ARGS=()
 buildType=debug
-archType=r32
+archType=r64
 
 while [[ $# -gt 0 ]]; do
   case $1 in

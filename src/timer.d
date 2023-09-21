@@ -19,7 +19,7 @@ struct TimerScratch {
 
 void timerInit()
 {
-    size_t id = getHartId();
+    size_t id = get_hart_id();
 
     writeIntevalToTimer(id);
 
@@ -27,17 +27,17 @@ void timerInit()
     //TODO or 64-bit timer register?
     scratch.clintCmpRegister = cast(size_t) mtimecmpForHart(id);
     scratch.interval = interval;
-    setMScratch(cast(size_t) scratch.saveRegisters.ptr);
+    set_mscratch(cast(size_t) scratch.saveRegisters.ptr);
 
-    setMInterruptEnable(getMInterruptEnable | MIE_MTIE);
+    set_minterrupt_enable(get_minterrupt_enable | MIE_MTIE);
 }
 
-extern(C) size_t timerHandler(size_t epc, size_t cause)
+extern(C) size_t timer_handler(size_t epc, size_t cause)
 {
     //disable interrupts.
     //setMInterruptEnable(~((~getMInterruptEnable) | (1 << 7)));
 
-    auto id = getHartId();
+    auto id = get_hart_id();
     writeIntevalToTimer(id);
 
     // enable interrupts.

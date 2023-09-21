@@ -8,16 +8,16 @@ import uart;
 import task;
 import timer;
 
-extern (C) void setMInterruptVectorTrap();
+extern (C) void set_minterrupt_vector_trap();
 
 void trapInit()
 {
-    setMInterruptVectorTrap();
+    set_minterrupt_vector_trap();
 
-    setMStatus(getMStatus() | MSTATUS_MIE);
+    set_mstatus(get_mstatus() | MSTATUS_MIE);
 }
 
-extern (C) size_t trapHandler(size_t epc, size_t cause)
+extern (C) size_t trap_handler(size_t epc, size_t cause)
 {
     auto retPc = epc;
     auto cause_code = cause & 0xfff;
@@ -34,11 +34,11 @@ extern (C) size_t trapHandler(size_t epc, size_t cause)
             println("Timer interruption.");
 
             // disable timer interrupts.
-            setMInterruptEnable(~((~getMInterruptEnable) | (1 << 7)));
-            timerHandler(epc, cause);
+            set_minterrupt_enable(~((~get_minterrupt_enable) | (1 << 7)));
+            timer_handler(epc, cause);
             retPc = cast(size_t) &switchContextToOs;
             // enable timer interrupts.
-            setMInterruptEnable(getMInterruptEnable | MIE_MTIE);
+            set_minterrupt_enable(get_minterrupt_enable | MIE_MTIE);
             break;
         case 11:
             println("External interruption.");
@@ -50,7 +50,7 @@ extern (C) size_t trapHandler(size_t epc, size_t cause)
     }
     else
     {
-        println("Synchronous exception.");
+        println("Synchronous exception. Stopping the system.");
         while (true)
         {
         }

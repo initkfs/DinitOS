@@ -47,7 +47,7 @@ size_t taskCreate(void function() t)
 
 void switchContextToTask(size_t i) {
 	contextCurrent = &tasks[i];
-	contextSwitch(&contextOs, contextCurrent);
+	context_switch(&contextOs, contextCurrent);
 }
 
 void switchContextToOs() {
@@ -56,10 +56,10 @@ void switchContextToOs() {
     println("Switch context to os");
 	RegContext* ctx = contextCurrent;
 	contextCurrent = &contextOs;
-	contextSwitch(ctx, &contextOs);
+	context_switch(ctx, &contextOs);
 }
 
 private {
-    extern (C) void contextSwitch(RegContext* oldContext, RegContext* newContext);
+    extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
 }
 

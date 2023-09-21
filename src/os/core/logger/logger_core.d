@@ -23,6 +23,7 @@ string getLevelName(const LogLevel level) @nogc nothrow pure @safe
         if (level == l)
         {
             levelName = l.stringof;
+            break;
         }
     }
     return levelName;

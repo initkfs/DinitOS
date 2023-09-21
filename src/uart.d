@@ -5,22 +5,22 @@ module uart;
 
 import Ns16650a = os.core.io.ns16550a;
 
-void printElem(char c) {
+void print(char c) {
     Ns16650a.writeTx(c);
 }
 
-void printElem(string s) {
+void print(string s) {
     foreach (c; s) {
-        printElem(c);
+        print(c);
     }
 }
 
-void print(Args...)(Args args) {
+void printa(Args...)(Args args) {
     foreach (arg; args) {
-        printElem(arg);
+        print(arg);
     }
 }
 
 void println(Args...)(Args args) {
-    print(args, '\n');
+    printa(args, '\n');
 }

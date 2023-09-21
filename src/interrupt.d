@@ -19,7 +19,7 @@ ulong mtime()
     return clintBase + clintTimerRegOffset;
 }
 
-extern (C) size_t getHartId();
+extern (C) size_t get_hart_id();
 
 enum MSTATUS_MPP_MASK = (3 << 11);
 enum MSTATUS_MPP_M = (3 << 11);
@@ -27,14 +27,14 @@ enum MSTATUS_MPP_S = (1 << 11);
 enum MSTATUS_MPP_U = (0 << 11);
 enum MSTATUS_MIE = (1 << 3);
 
-extern (C) size_t getMStatus();
-extern (C) void setMStatus(size_t);
+extern (C) size_t get_mstatus();
+extern (C) void set_mstatus(size_t);
 
-extern (C) void setExceptionCounter(size_t);
-extern (C) size_t getExceptionCounter();
+extern (C) void set_exception_counter(size_t);
+extern (C) size_t get_exception_counter();
 
-extern (C) void setMScratch(size_t);
-extern (C) void setMInterruptVector(size_t);
+extern (C) void set_mscratch(size_t);
+extern (C) void set_minterrupt_vector(size_t);
 
 // external
 enum MIE_MEIE = (1 << 11);
@@ -43,17 +43,17 @@ enum MIE_MTIE = (1 << 7);
 // software
 enum MIE_MSIE = (1 << 3);
 
-extern (C) size_t getMInterruptEnable();
-extern (C) void setMInterruptEnable(size_t);
+extern (C) size_t get_minterrupt_enable();
+extern (C) void set_minterrupt_enable(size_t);
 
-extern (C) void setMInterruptVectorTimer();
+extern (C) void set_minterrupt_vector_timer();
 
 void disableInterrupts()
 {
-    setMInterruptEnable(~((~getMInterruptEnable) | (1 << 7)));
+    set_minterrupt_enable(~((~get_minterrupt_enable) | (1 << 7)));
 }
 
 void enableInterrupts()
 {
-    setMInterruptEnable(getMInterruptEnable | MIE_MTIE);
+    set_minterrupt_enable(get_minterrupt_enable | MIE_MTIE);
 }

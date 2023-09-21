@@ -19,9 +19,11 @@ import timer;
 import interrupt;
 import trap;
 
-__gshared int sharedCounter;
-
-__gshared Spinlock.Lock lock;
+__gshared
+{
+    int sharedCounter;
+    Spinlock.Lock lock;
+}
 
 extern (C) void dstart()
 {
@@ -44,16 +46,16 @@ extern (C) void dstart()
     Spinlock.initLock(&lock);
 
     taskCreate(&task0);
-    taskCreate(&task1);
+    // taskCreate(&task1);
 
-    size_t currentTask = 0;
-    while (true)
-    {
-        Syslog.trace("Run next task.");
-        switchContextToTask(currentTask);
-        Syslog.trace("Back to OS");
-        currentTask = (currentTask + 1) % taskCount;
-    }
+    // size_t currentTask = 0;
+    // while (true)
+    // {
+    //     Syslog.trace("Run next task.");
+    //     switchContextToTask(currentTask);
+    //     Syslog.trace("Back to OS");
+    //     currentTask = (currentTask + 1) % taskCount;
+    // }
 }
 
 void task0()

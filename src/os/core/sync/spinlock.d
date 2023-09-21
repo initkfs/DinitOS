@@ -10,9 +10,9 @@ struct Lock
     bool locked;
 }
 
-extern (C) int swapAtomic(Lock*);
+extern (C) int swap_atomic(Lock*);
 
-void initLock(Lock* lock)
+void initLock(scope Lock* lock) @safe
 {
     lock.locked = false;
 }
@@ -21,24 +21,24 @@ void acquire(Lock* lock)
 {
     while (true)
     {
-        if (!swapAtomic(lock))
+        if (!swap_atomic(lock))
         {
             break;
         }
     }
 }
 
-void free(Lock* lock)
+void free(scope Lock* lock)
 {
     initLock(lock);
 }
 
 void nativeLock()
 {
-    setMStatus(getMStatus & ~MSTATUS_MIE );
+    set_mstatus(get_mstatus & ~MSTATUS_MIE );
 }
 
 void nativeUnlock()
 {
-    setMStatus(getMStatus | MSTATUS_MIE );
+    set_mstatus(get_mstatus | MSTATUS_MIE );
 }
