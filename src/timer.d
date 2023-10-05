@@ -35,13 +35,13 @@ void timerInit()
 extern(C) size_t timer_handler(size_t epc, size_t cause)
 {
     //disable interrupts.
-    //setMInterruptEnable(~((~getMInterruptEnable) | (1 << 7)));
+    set_minterrupt_enable(~((~get_minterrupt_enable) | (1 << 7)));
 
     auto id = get_hart_id();
     writeIntevalToTimer(id);
 
     // enable interrupts.
-    //setMInterruptEnable(getMInterruptEnable | MIE_MTIE);
+    set_minterrupt_enable(get_minterrupt_enable | MIE_MTIE);
 
     println("Timer handler");
 

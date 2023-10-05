@@ -233,7 +233,7 @@ system_timer:
 	mret
 
 .globl trap_vector
-.align 4
+.align(4)
 trap_vector:
 	csrrw	t6, mscratch, t6
     reg_save t6
@@ -247,7 +247,7 @@ trap_vector:
 	mret
 
 .globl swap_atomic
-.align 4
+.align(4)
 swap_atomic:
     li a5, 1
     amoswap.w.aq a5, a5, 0(a0)
@@ -259,46 +259,54 @@ set_minterrupt_vector_trap:
     la a0, trap_vector
     csrw mtvec, a0
     ret
+
 .globl set_minterrupt_vector_timer
 set_minterrupt_vector_timer:
     la a0, system_timer
     csrw mtvec, a0
     ret
+
 .globl get_hart_id
 get_hart_id:
     csrr a0, mhartid
     ret
+
 .globl get_mstatus
 get_mstatus:
     csrr a0, mstatus
     ret
+
 .globl set_mstatus
 set_mstatus:
     csrw mstatus, a0
     ret
+
 .globl set_exception_counter
 set_exception_counter:
     csrw mepc, a0
     ret
+
 .globl get_exception_counter
 get_exception_counter:
     csrr a0, mepc
     ret
+
 .globl set_mscratch
 set_mscratch:
     csrw mscratch, a0
     ret
+
 .globl set_minterrupt_vector
 set_minterrupt_vector:
     csrw mtvec, a0
     ret
+
 .globl get_minterrupt_enable
 get_minterrupt_enable:
     csrr a0, mie
     ret
+
 .globl set_minterrupt_enable
 set_minterrupt_enable:
     csrw mie, a0
     ret
-
-    

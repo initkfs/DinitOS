@@ -22,7 +22,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
     auto retPc = epc;
     auto cause_code = cause & 0xfff;
 
-    if (cause & 0x80000000)
+    if (cause << (size_t.sizeof * 8 - 1))
     {
         /* Asynchronous trap - interrupt */
         switch (cause_code)
