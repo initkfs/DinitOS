@@ -3,6 +3,8 @@
  */
 module trap;
 
+import Interrupts = os.core.arch.riscv.interrupts;
+
 import interrupt;
 import uart;
 import task;
@@ -14,7 +16,7 @@ void trapInit()
 {
     set_minterrupt_vector_trap();
 
-    set_mstatus(get_mstatus() | MSTATUS_MIE);
+    Interrupts.setMStatus(Interrupts.getMStatus | MSTATUS_MIE);
 }
 
 extern (C) size_t trap_handler(size_t epc, size_t cause)
@@ -34,11 +36,11 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
             println("Timer interruption.");
 
             // disable timer interrupts.
-            set_minterrupt_enable(~((~get_minterrupt_enable) | (1 << 7)));
+            Interrupts.setMinterruptEnable(~((~Interrupts.getMinterruptEnable) | MIE_MTIE));
             timer_handler(epc, cause);
             retPc = cast(size_t) &switchContextToOs;
             // enable timer interrupts.
-            set_minterrupt_enable(get_minterrupt_enable | MIE_MTIE);
+            Interrupts.setMinterruptEnable(Interrupts.getMinterruptEnable | MIE_MTIE);
             break;
         case 11:
             println("External interruption.");

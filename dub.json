@@ -11,7 +11,7 @@
             "name": "riscv32",
             "buildOptions": [],
             "versions": [
-                "Riscv32"
+            "Qemu", "Riscv32"
             ],
             "postBuildCommands": [],
             "dflags-ldc": [
@@ -22,7 +22,7 @@
             "name": "riscv64",
             "buildOptions": [],
             "versions": [
-                "Riscv64"
+                "Qemu", "Riscv64"
             ],
             "postBuildCommands": [],
             "dflags-ldc": [

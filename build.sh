@@ -21,7 +21,7 @@ fi
 
 buildDir=$scriptDir/build
 sourceDir=$scriptDir/src
-bootSourceDir=$sourceDir/boot
+bootSourceDir=$sourceDir/boot/riscv
 
 bootFile=$buildDir/boot
 kernelFile=$buildDir/kernel
