@@ -3,14 +3,13 @@
  */
 module timer;
 
-import interrupt;
 import uart;
 
 import Harts = os.core.arch.riscv.harts;
-import Interrupts = os.core.arch.riscv.interrupts;
+import Interrupts = os.core.arch.riscv.minterrupts;
 
 enum interval = 20000000;
-__gshared TimerScratch[numCores] timerMscratchs;
+__gshared TimerScratch[Interrupts.numCores] timerMscratchs;
 
 struct TimerScratch {
     align(1):
@@ -22,27 +21,27 @@ struct TimerScratch {
 
 void timerInit()
 {
-    size_t id = Harts.getHartId();
+    size_t id = Harts.hartId();
 
     writeIntevalToTimer(id);
 
     TimerScratch* scratch = &timerMscratchs[id];
     //TODO or 64-bit timer register?
-    scratch.clintCmpRegister = cast(size_t) mtimecmpForHart(id);
+    scratch.clintCmpRegister = cast(size_t) Interrupts.timeRegCmpAddr(id);
     scratch.interval = interval;
-    Interrupts.setMscratch(cast(size_t) scratch.saveRegisters.ptr);
+    Interrupts.scratch(cast(size_t) scratch.saveRegisters.ptr);
 
-    Interrupts.setMinterruptEnable(Interrupts.getMinterruptEnable | MIE_MTIE);
+    Interrupts.interruptIsEnable(Interrupts.interruptIsEnable | Interrupts.MIE_MTIE);
 }
 
 extern(C) size_t timer_handler(size_t epc, size_t cause)
 {
-    Interrupts.disableInterrupts;
+    Interrupts.disableMInterrupts;
 
-    auto id = Harts.getHartId();
+    auto id = Harts.hartId();
     writeIntevalToTimer(id);
 
-    Interrupts.enableInterrupts;
+    Interrupts.enableMInterrupts;
 
     println("Timer handler");
 
@@ -51,7 +50,7 @@ extern(C) size_t timer_handler(size_t epc, size_t cause)
 
 private void writeIntevalToTimer(size_t hartId)
 {
-    ulong* mtimeCmpPtr = cast(ulong*) mtimecmpForHart(hartId);
-    ulong currTimeValue = *(cast(ulong*) mtime());
+    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.timeRegCmpAddr(hartId);
+    ulong currTimeValue = *(cast(ulong*) Interrupts.time());
     *mtimeCmpPtr = currTimeValue + interval;
 }

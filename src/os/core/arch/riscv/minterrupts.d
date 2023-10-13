@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.core.arch.riscv.interrupts;
+module os.core.arch.riscv.minterrupts;
 
 version (Riscv32)
     version = Riscv;
@@ -37,66 +37,66 @@ enum MIE_MTIE = (1 << 7);
 // software
 enum MIE_MSIE = (1 << 3);
 
-ulong mtimecmpForHart(size_t hartid)
+ulong timeRegCmpAddr(size_t hartid)
 {
     return clintBase + clintCompareRegHurtOffset + numCores * (hartid);
 }
 
-ulong mtime()
+ulong time()
 {
     return clintBase + clintTimerRegOffset;
 }
 
-size_t getMStatus()
+size_t status()
 {
     size_t id = __asm!size_t("csrr a0, mstatus", "=r");
     return id;
 }
 
-void setMStatus(size_t status)
+void status(size_t status)
 {
     __asm("csrw mstatus, a0", "r", status);
 }
 
-void setExceptionCounter(size_t c)
+void exceptionCounter(size_t c)
 {
     __asm("csrw mepc, $0", "r", c);
 }
 
-size_t getExceptionCounter()
+size_t exceptionCounter()
 {
     size_t counter = __asm!size_t("csrr $0, mepc", "=r");
     return counter;
 }
 
-void setMscratch(size_t value)
+void scratch(size_t value)
 {
     __asm("csrw mscratch, $0", "r", value);
 }
 
-void setMinterruptVector(size_t value)
+void interruptVector(size_t value)
 {
     __asm("csrw mtvec, $0", "r", value);
 }
 
-size_t getMinterruptEnable()
+size_t interruptIsEnable()
 {
     return __asm!size_t("csrr $0, mie", "=r");
 }
 
-void setMinterruptEnable(size_t value)
+void interruptIsEnable(size_t value)
 {
     __asm("csrw mie, $0", "r", value);
 }
 
 extern (C) void set_minterrupt_vector_timer();
 
-void disableInterrupts()
+void disableMInterrupts()
 {
-    setMinterruptEnable(~((~getMinterruptEnable) | MIE_MTIE));
+    interruptIsEnable(~((~interruptIsEnable) | MIE_MTIE));
 }
 
-void enableInterrupts()
+void enableMInterrupts()
 {
-    setMinterruptEnable(getMinterruptEnable | MIE_MTIE);
+    interruptIsEnable(interruptIsEnable | MIE_MTIE);
 }

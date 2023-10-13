@@ -3,7 +3,7 @@
  */
 module os.core.sync.spinlock;
 
-import interrupt;
+import Interrupts = os.core.arch.riscv.minterrupts;
 
 struct Lock
 {
@@ -35,10 +35,10 @@ void free(scope Lock* lock)
 
 void nativeLock()
 {
-    set_mstatus(get_mstatus & ~MSTATUS_MIE );
+    Interrupts.status(Interrupts.status & ~Interrupts.MSTATUS_MIE );
 }
 
 void nativeUnlock()
 {
-    set_mstatus(get_mstatus | MSTATUS_MIE );
+    Interrupts.status(Interrupts.status | Interrupts.MSTATUS_MIE );
 }

@@ -16,7 +16,6 @@ import Spinlock = os.core.sync.spinlock;
 import uart;
 import task;
 import timer;
-import interrupt;
 import trap;
 
 __gshared
@@ -43,7 +42,7 @@ extern (C) void dstart()
     timerInit;
     Syslog.info("Init timers");
 
-    Spinlock.initLock(&lock);
+   // Spinlock.initLock(&lock);
 
     taskCreate(&task0);
     // taskCreate(&task1);
@@ -63,15 +62,15 @@ void task0()
     Syslog.trace("Task0 created.");
     while (true)
     {
-        Syslog.trace("Task0: running...");
-        foreach (i; 0 .. 50)
-        {
-            Spinlock.acquire(&lock);
-            sharedCounter++;
-            Spinlock.free(&lock);
-            delayTicks(100);
-        }
-        delayTicks;
+        // Syslog.trace("Task0: running...");
+        // foreach (i; 0 .. 50)
+        // {
+        //     Spinlock.acquire(&lock);
+        //     sharedCounter++;
+        //     Spinlock.free(&lock);
+        //     delayTicks(100);
+        // }
+        // delayTicks;
     }
 }
 
