@@ -42,9 +42,11 @@ extern (C) void dstart()
     timerInit;
     Syslog.info("Init timers");
 
-   // Spinlock.initLock(&lock);
+    // Spinlock.initLock(&lock);
 
-    taskCreate(&task0);
+    auto tid = taskCreate(&task0);
+    auto tid2 = taskCreate(&task1);
+    switchContextToTask(tid);
     // taskCreate(&task1);
 
     // size_t currentTask = 0;
@@ -62,7 +64,7 @@ void task0()
     Syslog.trace("Task0 created.");
     while (true)
     {
-        // Syslog.trace("Task0: running...");
+        Syslog.trace("Task0: running...");
         // foreach (i; 0 .. 50)
         // {
         //     Spinlock.acquire(&lock);
@@ -70,7 +72,7 @@ void task0()
         //     Spinlock.free(&lock);
         //     delayTicks(100);
         // }
-        // delayTicks;
+        delayTicks;
     }
 }
 
@@ -86,7 +88,7 @@ void task1()
 
 void delayTicks(int count = 1000)
 {
-    long counter = count * 50000;
+    long counter = count * 5000000;
     while (counter--)
     {
     }

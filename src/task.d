@@ -3,7 +3,9 @@
  */
 module task;
 
-enum taskMaxCount = 10;
+import uart;
+
+enum taskMaxCount = 16;
 enum taskStacksSize = 1024;
 
 __gshared ubyte[taskStacksSize][taskMaxCount] taskStacks;
@@ -12,7 +14,8 @@ __gshared RegContext[taskMaxCount] tasks;
 __gshared RegContext contextOs;
 __gshared RegContext* contextCurrent;
 
-__gshared size_t taskCount=0;
+__gshared size_t taskCount;
+__gshared size_t currentTaskIndex;
 
 alias reg_t = size_t;
 
@@ -21,7 +24,6 @@ struct RegContext
 align(1):
     reg_t ra;
     reg_t sp;
-
     //saved
     reg_t s0;
     reg_t s1;
@@ -39,27 +41,43 @@ align(1):
 
 size_t taskCreate(void function() t)
 {
-	auto i=taskCount++;
-	tasks[i].ra = cast(reg_t) t;
-	tasks[i].sp = cast(reg_t) &taskStacks[i][taskStacksSize-1];
-	return i;
+    auto i = taskCount;
+    tasks[i].ra = cast(reg_t) t;
+    tasks[i].sp = cast(reg_t)&taskStacks[i][taskStacksSize - 1];
+    taskCount++;
+
+    // if(!contextCurrent){
+    //     contextCurrent = &tasks[i];
+    // }
+
+    return i;
 }
 
-void switchContextToTask(size_t i) {
-	contextCurrent = &tasks[i];
-	context_switch(&contextOs, contextCurrent);
+void switchContextToTask(size_t i)
+{
+    contextCurrent = &tasks[i];
+    context_switch(&contextOs, contextCurrent);
 }
 
-void switchContextToOs() {
-    //back to os
-    import uart;
-    println("Switch context to os");
-	RegContext* ctx = contextCurrent;
-	contextCurrent = &contextOs;
-	context_switch(ctx, &contextOs);
+void switchTasks()
+{
+    println("Switch tasks");
+    if (currentTaskIndex >= taskCount)
+    {
+        currentTaskIndex = 0;
+    }
+
+    auto oldTask = contextCurrent;
+    auto newTask = &tasks[currentTaskIndex];
+
+    contextCurrent = newTask;
+
+    currentTaskIndex++;
+
+    context_switch(oldTask, newTask);
 }
 
-private {
+private
+{
     extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
 }
-
