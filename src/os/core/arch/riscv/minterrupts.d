@@ -39,7 +39,7 @@ enum MIE_MSIE = (1 << 3);
 
 ulong timeRegCmpAddr(size_t hartid)
 {
-    return clintBase + clintCompareRegHurtOffset + numCores * (hartid);
+    return clintBase + clintCompareRegHurtOffset + numCores * hartid;
 }
 
 ulong time()
