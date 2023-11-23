@@ -5,6 +5,7 @@ module dstart;
 
 import Syslog = os.core.logger.syslog;
 import Allocator = os.core.mem.allocs.block_allocator;
+import os.core.mem.mem_core: Ptr;
 
 __gshared extern (C)
 {

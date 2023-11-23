@@ -3,6 +3,8 @@
  */
 module os.core.mem.allocs.block_allocator;
 
+import os.core.mem.mem_core : Ptr;
+
 /*
 * Part of the code is ported from tinyalloc
 * https://github.com/thi-ng/tinyalloc
@@ -99,6 +101,13 @@ bool free(void* ptr)
         block = block.next;
     }
     return false;
+}
+
+Ptr!T allocPtr(T)(size_t num){
+    Block* block = allocBlock(num);
+    assert(block, "Allocated block is null");
+    assert(block.size >= num, "Block size is smaller than requested");
+    return Ptr!T(cast(T*) block.addr, num, &free);
 }
 
 void* alloc(size_t num)
