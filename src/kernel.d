@@ -26,12 +26,14 @@ __gshared
 {
     int sharedCounter;
     Spinlock.Lock lock;
+
+    bool isTimer;
 }
 
 extern (C) void dstart()
 {
-    auto bss = cast(ubyte*) &_bss_start;
-    auto bss_end = cast(ubyte*) &_bss_end;
+    auto bss = cast(ubyte*)&_bss_start;
+    auto bss_end = cast(ubyte*)&_bss_end;
     while (bss < bss_end)
     {
         //TODO volatile
@@ -44,11 +46,15 @@ extern (C) void dstart()
 
     trapInit;
     Syslog.info("Init traps");
-    timerInit;
-    Syslog.info("Init timers");
+
+    if (isTimer)
+    {
+        timerInit;
+        Syslog.info("Init timers");
+    }
 
     auto heapStartAddr = cast(void*)(&_heap_start);
-    auto heapEndAddr = cast(void*) (&_heap_end - 16);
+    auto heapEndAddr = cast(void*)(&_heap_end - 16);
 
     Allocator.initialize(heapStartAddr, heapEndAddr);
 
