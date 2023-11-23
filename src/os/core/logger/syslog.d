@@ -77,7 +77,7 @@ bool isForSyslogLevel(LogLevel level) @nogc nothrow
     return isForLogLevel(level, logLevel);
 }
 
-private void log(LogLevel level, lazy string message, lazy string file, lazy int line)
+private void log(LogLevel level, string message, string file, int line)
 {
     if (!isForLogLevel(level, logLevel))
     {
@@ -94,13 +94,12 @@ private void log(LogLevel level, lazy string message, lazy string file, lazy int
     logWrite(spaceChar);
     logWrite(file);
     logWrite('\n');
-    
 
     //TODO line;
 }
 
-private void logf(T)(LogLevel level, lazy string pattern, lazy T[] args,
-    lazy string file, lazy int line)
+private void logf(T)(LogLevel level, string pattern, T[] args,
+    string file, int line)
 {
     if (!isForLogLevel(level, logLevel))
     {
@@ -111,12 +110,12 @@ private void logf(T)(LogLevel level, lazy string pattern, lazy T[] args,
     log(level, pattern, file, line);
 }
 
-void tracef(T)(lazy string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void tracef(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.trace, pattern, args, file, line);
 }
 
-void trace(lazy string message, const string file = __FILE__, const int line = __LINE__)
+void trace(string message, const string file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.trace, message, file, line);
 }
@@ -126,12 +125,12 @@ void trace(lazy string message, const string file = __FILE__, const int line = _
 //     trace(Strings.toString(message), file, line);
 // }
 
-void infof(T)(lazy string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void infof(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.info, pattern, args, file, line);
 }
 
-void info(lazy string message, const string file = __FILE__, const int line = __LINE__)
+void info(string message, const string file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.info, message, file, line);
 }
@@ -141,12 +140,12 @@ void info(lazy string message, const string file = __FILE__, const int line = __
 //     info(Strings.toString(message), file, line);
 // }
 
-void warnf(T)(lazy string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void warnf(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.warn, pattern, args, file, line);
 }
 
-void warn(lazy string message, const string file = __FILE__, const int line = __LINE__)
+void warn(string message, const string file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.warn, message, file, line);
 }
@@ -156,12 +155,12 @@ void warn(lazy string message, const string file = __FILE__, const int line = __
 //     warn(Strings.toString(message), file, line);
 // }
 
-void errorf(T)(lazy string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void errorf(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.error, pattern, args, file, line);
 }
 
-void error(lazy string message, const string file = __FILE__, const int line = __LINE__)
+void error(string message, const string file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.error, message, file, line);
 }

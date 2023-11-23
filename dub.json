@@ -9,30 +9,51 @@
     "configurations": [
         {
             "name": "riscv32",
-            "buildOptions": [],
             "versions": [
-            "Qemu", "Riscv32"
+                "Qemu",
+                "Riscv32",
+                "Riscv32Debug"
             ],
-            "postBuildCommands": [],
             "dflags-ldc": [
-                "-mtriple=riscv32-unknown-elf"
+                "-mtriple=riscv32-unknown-elf" 
+            ]
+        },
+        {
+            "name": "riscv32-release",
+            "versions": [
+                "Qemu",
+                "Riscv32"
+            ],
+            "dflags-ldc": [
+                "-mtriple=riscv32-unknown-elf",
+                "-Oz"
             ]
         },
         {
             "name": "riscv64",
-            "buildOptions": [],
             "versions": [
-                "Qemu", "Riscv64"
+                "Qemu",
+                "Riscv64",
+                "Riscv64Debug"
             ],
-            "postBuildCommands": [],
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-elf"
+            ]
+        },
+        {
+            "name": "riscv64-release",
+            "versions": [
+                "Qemu",
+                "Riscv64"
+            ],
+            "dflags-ldc": [
+                "-mtriple=riscv64-unknown-elf",
+                "-Oz"
             ]
         }
     ],
     "dflags-ldc": [
         "-betterC",
-        "-Oz",
         "-mattr=+m,+a,+c",
         "--code-model=medium",
         "--nodefaultlib",

@@ -4,11 +4,15 @@
 module dstart;
 
 import Syslog = os.core.logger.syslog;
+import Allocator = os.core.mem.allocs.block_allocator;
 
 __gshared extern (C)
 {
     size_t _bss_start;
     size_t _bss_end;
+
+    size_t _heap_start;
+    size_t _heap_end;
 }
 
 import Spinlock = os.core.sync.spinlock;
@@ -26,10 +30,11 @@ __gshared
 
 extern (C) void dstart()
 {
-    auto bss = &_bss_start;
-    auto bss_end = &_bss_end;
+    auto bss = cast(ubyte*) &_bss_start;
+    auto bss_end = cast(ubyte*) &_bss_end;
     while (bss < bss_end)
     {
+        //TODO volatile
         *bss++ = 0;
     }
 
@@ -41,6 +46,11 @@ extern (C) void dstart()
     Syslog.info("Init traps");
     timerInit;
     Syslog.info("Init timers");
+
+    auto heapStartAddr = cast(void*)(&_heap_start);
+    auto heapEndAddr = cast(void*) (&_heap_end - 16);
+
+    Allocator.initialize(heapStartAddr, heapEndAddr);
 
     // Spinlock.initLock(&lock);
 
@@ -64,7 +74,7 @@ void task0()
     Syslog.trace("Task0 created.");
     while (true)
     {
-        Syslog.trace("Task0: running...");
+        //Syslog.trace("Task0: running...");
         // foreach (i; 0 .. 50)
         // {
         //     Spinlock.acquire(&lock);
@@ -81,7 +91,7 @@ void task1()
     Syslog.trace("Task1 created.");
     while (true)
     {
-        Syslog.trace("Task1: running...");
+        //Syslog.trace("Task1: running...");
         delayTicks;
     }
 }

@@ -31,6 +31,8 @@ kernelBin=${kernelFile}.bin
 POSITIONAL_ARGS=()
 buildType=debug
 archType=r32
+isRelease=false
+isGdb=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -42,6 +44,16 @@ while [[ $# -gt 0 ]]; do
     -a|--arch)
       archType="$2"
       shift
+      shift
+      ;;
+     -r|--release)
+      isRelease=true
+      echo "Release mode enabled"
+      shift
+      ;;
+      -g|--gdb)
+      isGdb=true
+      echo "GDB mode enabled"
       shift
       ;;
     -*|--*)
@@ -84,6 +96,10 @@ case $archType in
     ;;
 esac
 
+if [[ "$isRelease" == "true" ]]; then
+    dubConfigType="${dubConfigType}-release"
+fi
+
 echo "Build $buildType, arch: $archType, dub: $dubConfigType, asm: $assemblyMarchType"
 
 time dub --quiet build --compiler=ldc2 "--config=$dubConfigType" "--build=$buildType"
@@ -92,7 +108,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-riscv64-unknown-elf-as -fno-pic -mno-relax -march=$assemblyMarchType --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -c -o "${bootFile}.o"
+riscv64-unknown-elf-as -march=$assemblyMarchType --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
 if [[ $? -ne 0 ]]; then
     echo "Boot build error" >&2
     exit 1
@@ -117,5 +133,8 @@ if [[ -z $emulator ]]; then
     exit 1
 fi
 
-"$emulator" -smp 2 -serial stdio -bios none -machine virt -kernel "$kernelBin" 
-#-s -S
+qemuArgs=""
+if [[ "$isGdb" == "true" ]]; then
+    qemuArgs="$qemuArgs -s -S"
+fi
+"$emulator" -smp 2 -m 128M -serial stdio -bios none -machine virt -kernel "$kernelBin" $qemuArgs
