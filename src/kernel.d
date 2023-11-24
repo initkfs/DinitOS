@@ -59,6 +59,11 @@ extern (C) void dstart()
 
     Allocator.initialize(heapStartAddr, heapEndAddr);
 
+    auto ptr = Allocator.ptr!byte(1);
+    ptr[0] = 15;
+    auto i = ptr[0];
+    assert(i == 15);
+
     // Spinlock.initLock(&lock);
 
     auto tid = taskCreate(&task0);

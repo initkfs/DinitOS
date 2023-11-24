@@ -103,11 +103,13 @@ bool free(void* ptr)
     return false;
 }
 
-Ptr!T allocPtr(T)(size_t num){
-    Block* block = allocBlock(num);
+Ptr!T ptr(T)(size_t capacity = 1){
+    assert(capacity > 0);
+    immutable sizeInBytes = capacity * T.sizeof;
+    Block* block = allocBlock(sizeInBytes);
     assert(block, "Allocated block is null");
-    assert(block.size >= num, "Block size is smaller than requested");
-    return Ptr!T(cast(T*) block.addr, num, &free);
+    assert(block.size >= sizeInBytes, "Block size is smaller than requested");
+    return Ptr!T(cast(T*) block.addr, block.size, capacity, &free);
 }
 
 void* alloc(size_t num)

@@ -5,7 +5,8 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
     private
     {
         T* _ptr;
-        size_t _size;
+        size_t _sizeInBytes;
+        size_t _capacity;
         bool _freed;
         F freeFunPtr;
     }
@@ -13,11 +14,17 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
     bool isCheckBounds;
     bool isAutoFree;
 
-    this(T* t, size_t size, F freeFunPtr = null, bool isAutoFree = true, bool isCheckBounds = true) @nogc nothrow pure
+    this(T* t, size_t sizeBytes, size_t capacity, F freeFunPtr = null, bool isAutoFree = true, bool isCheckBounds = true) @nogc nothrow pure
     {
-        assert(size > 0);
+        static assert(T.sizeof > 0);
+        assert(sizeBytes > 0);
+        assert(sizeBytes >= T.sizeof);
+        assert(capacity > 0);
+        assert(sizeBytes >= capacity * T.sizeof);
+
         _ptr = t;
-        _size = size;
+        _sizeInBytes = sizeBytes;
+        _capacity = capacity;
         this.freeFunPtr = freeFunPtr;
         this.isAutoFree = isAutoFree;
         this.isCheckBounds = isCheckBounds;
@@ -37,11 +44,17 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
         }
     }
 
+    bool isFreed() @nogc nothrow
+    {
+        return _freed;
+    }
+
     protected void free() @nogc nothrow
     {
         assert(!_freed, "Memory pointer has already been freed");
         _freed = true;
-        _size = 0;
+        _sizeInBytes = 0;
+        _capacity = 0;
         if (freeFunPtr)
         {
             bool isFreed = freeFunPtr(cast(void*) _ptr);
@@ -50,26 +63,12 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
         _ptr = null;
     }
 
-    size_t base() @nogc nothrow
-    {
-        return cast(size_t) _ptr;
-    }
-
-    size_t end() @nogc nothrow
-    {
-        return base + _size;
-    }
-
     protected T* index(size_t i) @nogc nothrow
     {
         if (isCheckBounds)
         {
-            const endAddr = base + T.sizeof * i;
-            if (endAddr >= end)
-            {
-                //TODO
-                assert(false, "Index is out of bounds");
-            }
+            //TODO
+            assert(i < capacity, "Index is out of bounds");
         }
         return &_ptr[i];
     }
@@ -97,8 +96,13 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
 
     private void opAssign(Ptr);
 
-    size_t size() @nogc nothrow
+    size_t sizeBytes() @nogc nothrow
     {
-        return _size;
+        return _sizeInBytes;
+    }
+
+    size_t capacity() @nogc nothrow
+    {
+        return _capacity;
     }
 }
