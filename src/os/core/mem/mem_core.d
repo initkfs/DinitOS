@@ -1,5 +1,25 @@
 module os.core.mem.mem_core;
 
+extern (C) void* memcpy(void* dest, const void* src, size_t len)
+{
+    foreach (i; 0 .. len)
+    {
+        (cast(ubyte*) dest)[i] = (cast(ubyte*) src)[i];
+    }
+    return dest;
+}
+
+//not int c
+extern (C) void* memset(void* dest, ubyte c, size_t len)
+{
+    foreach (i; 0 .. len)
+    {
+        ubyte* ptr = cast(ubyte*) dest;
+        ptr[i] = c;
+    }
+    return dest;
+}
+
 struct Ptr(T, F = bool function(void*) @nogc nothrow)
 {
     private

@@ -8,6 +8,7 @@ import Syslog = os.core.logger.syslog;
 import Allocator = os.core.mem.allocs.block_allocator;
 import MemCore = os.core.mem.mem_core;
 import os.core.mem.mem_core : Ptr;
+import StackStrMod = os.core.strings.stack_str;
 
 __gshared extern (C)
 {
@@ -43,7 +44,8 @@ private void runTests()
     import std.meta : AliasSeq;
 
     alias testModules = AliasSeq!(
-        MemCore
+        MemCore,
+        StackStrMod
         );
 
     foreach (m; testModules)
