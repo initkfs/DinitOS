@@ -3,9 +3,11 @@
  */
 module dstart;
 
+import Tests = os.core.tests;
 import Syslog = os.core.logger.syslog;
 import Allocator = os.core.mem.allocs.block_allocator;
-import os.core.mem.mem_core: Ptr;
+import MemCore = os.core.mem.mem_core;
+import os.core.mem.mem_core : Ptr;
 
 __gshared extern (C)
 {
@@ -29,6 +31,30 @@ __gshared
     Spinlock.Lock lock;
 
     bool isTimer;
+}
+
+private void runTests()
+{
+    if (Syslog.isTraceLevel)
+    {
+        Syslog.trace("Start testing modules");
+    }
+
+    import std.meta : AliasSeq;
+
+    alias testModules = AliasSeq!(
+        MemCore
+        );
+
+    foreach (m; testModules)
+    {
+        Tests.runTest!(m);
+    }
+
+    if (Syslog.isTraceLevel)
+    {
+        Syslog.trace("End of testing modules");
+    }
 }
 
 extern (C) void dstart()
@@ -59,10 +85,7 @@ extern (C) void dstart()
 
     Allocator.initialize(heapStartAddr, heapEndAddr);
 
-    auto ptr = Allocator.ptr!byte(1);
-    ptr[0] = 15;
-    auto i = ptr[0];
-    assert(i == 15);
+    runTests;
 
     // Spinlock.initLock(&lock);
 

@@ -32,11 +32,13 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
 
     alias value this;
 
+@nogc nothrow:
+
     @disable this(ref return scope Ptr!T rhs)
     {
     }
 
-    ~this() @nogc nothrow
+    ~this()
     {
         if (isAutoFree)
         {
@@ -44,12 +46,12 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
         }
     }
 
-    bool isFreed() @nogc nothrow
+    bool isFreed() const pure @safe
     {
         return _freed;
     }
 
-    protected void free() @nogc nothrow
+    protected void free()
     {
         assert(!_freed, "Memory pointer has already been freed");
         _freed = true;
@@ -63,7 +65,7 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
         _ptr = null;
     }
 
-    protected T* index(size_t i) @nogc nothrow
+    protected inout(T*) index(size_t i) inout
     {
         if (isCheckBounds)
         {
@@ -73,36 +75,60 @@ struct Ptr(T, F = bool function(void*) @nogc nothrow)
         return &_ptr[i];
     }
 
-    T opIndex(size_t i) @nogc nothrow
+    inout(T) opIndex(size_t i) inout
     {
         return *(index(i));
     }
 
-    T value()
+    inout(T) value() inout
     {
         return opIndex(0);
     }
 
-    T* get()
+    void value(T newValue)
+    {
+        *index(0) = newValue;
+    }
+
+    inout(T*) get() inout
     {
         return _ptr;
     }
 
     // a[i] = v
-    void opIndexAssign(T value, size_t i) @nogc nothrow
+    void opIndexAssign(T value, size_t i)
     {
         *(index(i)) = value;
     }
 
     private void opAssign(Ptr);
 
-    size_t sizeBytes() @nogc nothrow
+    size_t size() const
     {
         return _sizeInBytes;
     }
 
-    size_t capacity() @nogc nothrow
+    size_t capacity() const
     {
         return _capacity;
     }
+}
+
+__gshared int* v;
+
+unittest
+{
+    int value = 45;
+    auto ptr = Ptr!(int)(&value, value.sizeof, 1, null, false, true);
+
+    assert(!ptr.isFreed, "Pointer freed");
+    assert(ptr.size == value.sizeof, "Pointer invalid size");
+
+    assert(ptr.value == value, "Pointer value incorrect");
+    assert(ptr[0] == value, "Pointer first index incorrect");
+    assert(ptr.get == &value, "Invalid raw pointer");
+
+    enum newValue = 2324;
+    ptr.value = newValue;
+    assert(ptr.value == newValue, "Pointer invalid new value");
 }

@@ -15,7 +15,8 @@
                 "Riscv32Debug"
             ],
             "dflags-ldc": [
-                "-mtriple=riscv32-unknown-elf" 
+                "-mtriple=riscv32-unknown-elf",
+                "--unittest"
             ]
         },
         {
@@ -37,7 +38,8 @@
                 "Riscv64Debug"
             ],
             "dflags-ldc": [
-                "-mtriple=riscv64-unknown-elf"
+                "-mtriple=riscv64-unknown-elf",
+                "--unittest"
             ]
         },
         {
@@ -59,7 +61,9 @@
         "--nodefaultlib",
         "--function-sections",
         "--data-sections",
-        "--relocation-model=static"
+        "--relocation-model=static",
+        "-dip1000", 
+        "-preview=in"
     ],
     "targetType": "library",
     "targetName": "kernel",

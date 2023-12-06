@@ -43,7 +43,7 @@ version (LDC)
         {
             Type t;
             Type* tptr = &t;
-            safe(tptr, 147);
+            save(tptr, 147);
             Type result = load(tptr);
             assert(t == result);
         }
