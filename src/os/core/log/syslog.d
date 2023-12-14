@@ -3,6 +3,7 @@
  */
 module os.core.log.syslog;
 
+import Inspector = os.core.support.inspector;
 import os.core.log.logger_core;
 
 import std.traits;
@@ -79,6 +80,11 @@ bool isForSyslogLevel(LogLevel level) @nogc nothrow
 
 private void log(LogLevel level, string message, string file, int line)
 {
+    if (level == LogLevel.error && !Inspector.isErrors)
+    {
+        Inspector.setErrors;
+    }
+
     if (!isForLogLevel(level, logLevel))
     {
         return;

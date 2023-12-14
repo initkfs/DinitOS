@@ -7,7 +7,7 @@ import Volatile = os.core.volatile;
 
 __gshared ubyte* uartAddr = cast(ubyte*) 0x10000000;
 
-void writeTx(ubyte b)
+void writeTx(ubyte b) @nogc nothrow
 {
     Volatile.save(uartAddr, b);
 }

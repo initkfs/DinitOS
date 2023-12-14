@@ -5,10 +5,11 @@ module dstart;
 
 import Tests = os.core.tests;
 import Syslog = os.core.log.syslog;
-import Allocator = os.core.mem.allocs.block_allocator;
+import BlockAllocator = os.core.mem.allocs.block_allocator;
 import MemCore = os.core.mem.mem_core;
-import os.core.mem.mem_core : Ptr;
+import UPtr = os.core.mem.unique_ptr;
 import StackStrMod = os.core.strings.stack_str;
+import Allocator = os.core.mem.allocs.allocator;
 
 __gshared extern (C)
 {
@@ -45,6 +46,7 @@ private void runTests()
 
     alias testModules = AliasSeq!(
         MemCore,
+        UPtr,
         StackStrMod
         );
 
@@ -85,7 +87,19 @@ extern (C) void dstart()
     auto heapStartAddr = cast(void*)(&_heap_start);
     auto heapEndAddr = cast(void*)(&_heap_end - 16);
 
-    Allocator.initialize(heapStartAddr, heapEndAddr);
+    Allocator.heapStartAddr = heapStartAddr;
+    Allocator.heapEndAddr = heapEndAddr;
+
+    BlockAllocator.initialize(heapStartAddr, heapEndAddr);
+    Allocator.alloc = &BlockAllocator.alloc;
+    Allocator.calloc = &BlockAllocator.calloc;
+    Allocator.free = &BlockAllocator.free;
+
+    auto ptr = Allocator.uptr!char(2);
+    ptr[0] = 'a';
+    println(ptr[0]);
+    ptr.free;
+    println(ptr[0]);
 
     runTests;
 

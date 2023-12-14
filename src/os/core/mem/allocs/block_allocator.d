@@ -3,7 +3,8 @@
  */
 module os.core.mem.allocs.block_allocator;
 
-import os.core.mem.mem_core : Ptr;
+import os.core.mem.unique_ptr : UniqPtr;
+import os.core.errors;
 
 /*
 * Part of the code is ported from tinyalloc
@@ -101,15 +102,6 @@ bool free(void* ptr)
         block = block.next;
     }
     return false;
-}
-
-Ptr!T ptr(T)(size_t capacity = 1){
-    assert(capacity > 0);
-    immutable sizeInBytes = capacity * T.sizeof;
-    Block* block = allocBlock(sizeInBytes);
-    assert(block, "Allocated block is null");
-    assert(block.size >= sizeInBytes, "Block size is smaller than requested");
-    return Ptr!T(cast(T*) block.addr, block.size, capacity, &free);
 }
 
 void* alloc(size_t num)

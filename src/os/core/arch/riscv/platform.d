@@ -1,3 +1,6 @@
+/**
+ * Authors: initkfs
+ */
 module os.core.arch.riscv.platform;
 
 version (Riscv32)

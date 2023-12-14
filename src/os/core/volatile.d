@@ -12,28 +12,28 @@ version (LDC)
     }
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ubyte load(ubyte* ptr);
+    ubyte load(ubyte* ptr) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ushort load(ushort* ptr);
+    ushort load(ushort* ptr) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    uint load(uint* ptr);
+    uint load(uint* ptr) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcLoadIntrName)
-    ulong load(ulong* ptr);
+    ulong load(ulong* ptr) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void save(ubyte* ptr, ubyte value);
+    void save(ubyte* ptr, ubyte value) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void save(ushort* ptr, ushort value);
+    void save(ushort* ptr, ushort value) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void save(uint* ptr, uint value);
+    void save(uint* ptr, uint value) @nogc nothrow;
 
     pragma(LDC_intrinsic, ldcSaveIntrName)
-    void save(ulong* ptr, ulong value);
+    void save(ulong* ptr, ulong value) @nogc nothrow;
 
     unittest
     {
