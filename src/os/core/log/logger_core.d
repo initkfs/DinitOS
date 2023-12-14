@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.core.logger.logger_core;
+module os.core.log.logger_core;
 
 enum LogLevel
 {

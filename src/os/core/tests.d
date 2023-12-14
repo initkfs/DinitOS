@@ -3,7 +3,7 @@
  */
 module os.core.tests;
 
-import Syslog = os.core.logger.syslog;
+import Syslog = os.core.log.syslog;
 
 void runTest(alias testModule)()
 {

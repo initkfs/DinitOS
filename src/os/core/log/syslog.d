@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module os.core.logger.syslog;
+module os.core.log.syslog;
 
-import os.core.logger.logger_core;
+import os.core.log.logger_core;
 
 import std.traits;
 
@@ -16,7 +16,7 @@ private __gshared
 //TODO versions
 protected
 {
-    import Ns16650a = os.core.io.ns16550a;
+    import Ns16650a = os.core.dev.ns16550a;
 
     void logWrite(ubyte b)
     {

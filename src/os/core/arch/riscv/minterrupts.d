@@ -14,15 +14,12 @@ version (Riscv):
 
 import ldc.llvmasm;
 
-version (Qemu)
-{
-    import Qemu = os.core.dev.qemu;
+import Platform = os.core.arch.riscv.platform;
 
-    enum clintBase = Qemu.clintBase;
-    enum clintCompareRegHurtOffset = Qemu.clintCompareRegHurtOffset;
-    enum clintTimerRegOffset = Qemu.clintTimerRegOffset;
-    enum numCores = Qemu.numCores;
-}
+enum clintBase = Platform.clintBase;
+enum clintCompareRegHurtOffset = Platform.clintCompareRegHurtOffset;
+enum clintTimerRegOffset = Platform.clintTimerRegOffset;
+enum numCores = Platform.numCores;
 
 enum MSTATUS_MPP_MASK = (3 << 11);
 enum MSTATUS_MPP_M = (3 << 11);
@@ -88,8 +85,6 @@ void interruptIsEnable(size_t value)
 {
     __asm("csrw mie, $0", "r", value);
 }
-
-extern (C) void set_minterrupt_vector_timer();
 
 void disableMInterrupts()
 {
