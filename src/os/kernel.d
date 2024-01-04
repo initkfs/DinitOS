@@ -10,6 +10,7 @@ import MemCore = os.core.mem.mem_core;
 import UPtr = os.core.mem.unique_ptr;
 import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
+import Str = os.core.cstd.strings.str;
 
 __gshared extern (C)
 {
@@ -22,7 +23,7 @@ __gshared extern (C)
 
 import Spinlock = os.core.thread.sync.spinlock;
 
-import os.core.uart;
+import os.core.cstd.io.cstdio;
 import os.core.thread.task;
 import os.core.timer;
 import os.core.trap;
@@ -47,6 +48,7 @@ private void runTests()
     alias testModules = AliasSeq!(
         MemCore,
         UPtr,
+        Str,
         StackStrMod
         );
 
@@ -94,12 +96,6 @@ extern (C) void dstart()
     Allocator.alloc = &BlockAllocator.alloc;
     Allocator.calloc = &BlockAllocator.calloc;
     Allocator.free = &BlockAllocator.free;
-
-    auto ptr = Allocator.uptr!char(2);
-    ptr[0] = 'a';
-    println(ptr[0]);
-    ptr.free;
-    println(ptr[0]);
 
     runTests;
 

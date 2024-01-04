@@ -37,7 +37,7 @@ extern (C) noreturn __assert(const(char)* msg, const(char)* file, int line)
     string smsg = cast(string) msg[0 .. strlen(msg)];
     string sfile = cast(string) file[0 .. strlen(file)];
 
-    import os.core.uart;
+    import os.core.cstd.io.cstdio;
 
     println("Assert error: ", sfile, ": ", smsg);
     while (1)

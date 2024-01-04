@@ -5,7 +5,7 @@ module os.core.trap;
 
 import Interrupts = os.core.arch.riscv.minterrupts;
 
-import os.core.uart;
+import os.core.cstd.io.cstdio;
 import os.core.thread.task;
 import os.core.timer;
 
