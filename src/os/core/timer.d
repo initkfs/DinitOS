@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module timer;
+module os.core.timer;
 
-import uart;
+import os.core.uart;
 
 import Harts = os.core.arch.riscv.harts;
 import Interrupts = os.core.arch.riscv.minterrupts;

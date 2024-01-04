@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module uart;
+module os.core.uart;
 
 import Ns16650a = os.core.dev.ns16550a;
 

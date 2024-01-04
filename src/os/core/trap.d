@@ -1,13 +1,13 @@
 /**
  * Authors: initkfs
  */
-module trap;
+module os.core.trap;
 
 import Interrupts = os.core.arch.riscv.minterrupts;
 
-import uart;
-import task;
-import timer;
+import os.core.uart;
+import os.core.thread.task;
+import os.core.timer;
 
 extern (C) void set_minterrupt_vector_trap();
 

@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module task;
+module os.core.thread.task;
 
-import uart;
+import os.core.uart;
 
 enum taskMaxCount = 16;
 enum taskStacksSize = 1024;

@@ -3,15 +3,6 @@
  */
 module os.core.arch.riscv.harts;
 
-version (Riscv32)
-    version = Riscv;
-else version (Riscv64)
-    version = Riscv;
-
-//dfmt off
-version (Riscv): 
-//dfmt on
-
 import ldc.llvmasm;
 
 size_t hartId()

@@ -114,7 +114,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-riscv64-unknown-elf-ld --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/linker.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
+riscv64-unknown-elf-ld --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/link/riscv/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2
     exit 1

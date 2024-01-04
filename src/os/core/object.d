@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module object;
+module os.core.object;
 
 alias string = immutable(char)[];
 alias size_t = typeof(int.sizeof);
@@ -37,7 +37,7 @@ extern (C) noreturn __assert(const(char)* msg, const(char)* file, int line)
     string smsg = cast(string) msg[0 .. strlen(msg)];
     string sfile = cast(string) file[0 .. strlen(file)];
 
-    import uart;
+    import os.core.uart;
 
     println("Assert error: ", sfile, ": ", smsg);
     while (1)

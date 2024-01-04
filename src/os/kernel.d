@@ -1,14 +1,14 @@
 /**
  * Authors: initkfs
  */
-module dstart;
+module os.kernel;
 
 import Tests = os.core.tests;
 import Syslog = os.core.log.syslog;
 import BlockAllocator = os.core.mem.allocs.block_allocator;
 import MemCore = os.core.mem.mem_core;
 import UPtr = os.core.mem.unique_ptr;
-import StackStrMod = os.core.strings.stack_str;
+import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
 
 __gshared extern (C)
@@ -20,12 +20,12 @@ __gshared extern (C)
     size_t _heap_end;
 }
 
-import Spinlock = os.core.sync.spinlock;
+import Spinlock = os.core.thread.sync.spinlock;
 
-import uart;
-import task;
-import timer;
-import trap;
+import os.core.uart;
+import os.core.thread.task;
+import os.core.timer;
+import os.core.trap;
 
 __gshared
 {

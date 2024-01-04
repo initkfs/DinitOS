@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.core.strings.stack_str;
+module os.cstd.strings.stack_str;
 
 StackStr!(Len, T) makeStackStr(size_t Len = 128, T = char)(const(char)[] str = null)
 {

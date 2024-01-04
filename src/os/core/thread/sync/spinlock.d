@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.core.sync.spinlock;
+module os.core.thread.sync.spinlock;
 
 struct Lock
 {

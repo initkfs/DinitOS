@@ -7,7 +7,7 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
 {
     if (!expression())
     {
-        import uart;
+        import os.core.uart;
 
         println("Panic! ", message, ": ", file);
         //TODO halt
