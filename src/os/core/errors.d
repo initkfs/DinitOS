@@ -13,8 +13,11 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
     if (!expression())
     {
         import os.core.cstd.io.cstdio;
+        import Str = os.core.cstd.strings.str;
 
-        println("Panic! ", message, ": ", file);
+        char[64] buff = 0;
+        const buffPtr = Str.atoa(line, buff);
+        println("Panic! ", message, ": ", file, ":", buffPtr);
         //TODO halt
         while (true)
         {

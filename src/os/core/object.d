@@ -3,43 +3,18 @@
  */
 module os.core.object;
 
-alias string = immutable(char)[];
-alias size_t = typeof(int.sizeof);
-alias ptrdiff_t = typeof(cast(void*) 0 - cast(void*) 0);
+extern (C) void __assert(const(char)* msg, const(char)* file, int line)
+{
+    import Str = os.core.cstd.strings.str;
 
-alias noreturn = typeof(*null);
-
-static if ((void*).sizeof == 8)
-{
-    alias uintptr = ulong;
-}
-else static if ((void*).sizeof == 4)
-{
-    alias uintptr = uint;
-}
-else
-{
-    static assert(0, "Pointer size must be 4 or 8 bytes");
-}
-
-size_t strlen(const(char)* s)
-{
-    size_t n;
-    for (n = 0; *s != '\0'; ++s)
-    {
-        ++n;
-    }
-    return n;
-}
-
-extern (C) noreturn __assert(const(char)* msg, const(char)* file, int line)
-{
-    string smsg = cast(string) msg[0 .. strlen(msg)];
-    string sfile = cast(string) file[0 .. strlen(file)];
+    string smsg = cast(string) msg[0 .. Str.strlen(msg)];
+    string sfile = cast(string) file[0 .. Str.strlen(file)];
 
     import os.core.cstd.io.cstdio;
 
-    println("Assert error: ", sfile, ": ", smsg);
+    char[64] buff = 0;
+
+    println("Assert error: ", sfile, ": ", smsg, ":", Str.atoa(line, buff));
     while (1)
     {
     }
