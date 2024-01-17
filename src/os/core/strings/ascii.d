@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module os.core.cstd.strings.ascii;
+module os.core.strings.ascii;
 
 enum : char
 {

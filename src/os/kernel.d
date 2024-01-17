@@ -10,7 +10,7 @@ import MemCore = os.core.mem.mem_core;
 import UPtr = os.core.mem.unique_ptr;
 import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
-import Str = os.core.cstd.strings.str;
+import Str = os.core.strings.str;
 
 __gshared extern (C)
 {
@@ -23,7 +23,7 @@ __gshared extern (C)
 
 import Spinlock = os.core.thread.sync.spinlock;
 
-import os.core.cstd.io.cstdio;
+import os.core.io.cstdio;
 import os.core.thread.task;
 import os.core.timer;
 import os.core.trap;

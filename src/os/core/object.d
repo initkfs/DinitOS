@@ -5,12 +5,12 @@ module os.core.object;
 
 extern (C) void __assert(const(char)* msg, const(char)* file, int line)
 {
-    import Str = os.core.cstd.strings.str;
+    import Str = os.core.strings.str;
 
-    string smsg = cast(string) msg[0 .. Str.strlen(msg)];
-    string sfile = cast(string) file[0 .. Str.strlen(file)];
+    string smsg = cast(string) msg[0 .. Str.strlenz(msg)];
+    string sfile = cast(string) file[0 .. Str.strlenz(file)];
 
-    import os.core.cstd.io.cstdio;
+    import os.core.io.cstdio;
 
     char[64] buff = 0;
 

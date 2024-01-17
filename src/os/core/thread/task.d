@@ -3,7 +3,7 @@
  */
 module os.core.thread.task;
 
-import os.core.cstd.io.cstdio;;
+import os.core.io.cstdio;;
 
 enum taskMaxCount = 16;
 enum taskStacksSize = 1024;

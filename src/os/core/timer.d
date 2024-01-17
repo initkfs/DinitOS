@@ -3,7 +3,7 @@
  */
 module os.core.timer;
 
-import os.core.cstd.io.cstdio;
+import os.core.io.cstdio;
 
 import Harts = os.core.arch.riscv.harts;
 import Interrupts = os.core.arch.riscv.minterrupts;

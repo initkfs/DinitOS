@@ -1,10 +1,10 @@
 /**
  * Authors: initkfs
  */
-module os.core.cstd.io.cstdio;
+module os.core.io.cstdio;
 
 import Uart = os.core.dev.uart;
-import Ascii = os.core.cstd.strings.ascii;
+import Ascii = os.core.strings.ascii;
 
 @nogc nothrow:
 

@@ -12,8 +12,8 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
 {
     if (!expression())
     {
-        import os.core.cstd.io.cstdio;
-        import Str = os.core.cstd.strings.str;
+        import os.core.io.cstdio;
+        import Str = os.core.strings.str;
 
         char[64] buff = 0;
         const buffPtr = Str.atoa(line, buff);
