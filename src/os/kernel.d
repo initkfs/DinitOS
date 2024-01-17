@@ -11,6 +11,17 @@ import UPtr = os.core.mem.unique_ptr;
 import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
 import Str = os.core.strings.str;
+import MathCore = os.core.math.math_core;
+
+version (KFloatPoint)
+{
+    import MathFloat = os.core.math.math_float;
+}
+else
+{
+    //TODO placeholder
+    import MathFloat = os.core.math.math_core;
+}
 
 __gshared extern (C)
 {
@@ -49,8 +60,10 @@ private void runTests()
         MemCore,
         UPtr,
         Str,
-        StackStrMod
-        );
+        StackStrMod,
+        MathCore,
+        MathFloat
+    );
 
     foreach (m; testModules)
     {
