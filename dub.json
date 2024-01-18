@@ -12,7 +12,8 @@
             "versions": [
                 "Qemu",
                 "Riscv32",
-                "Riscv32Debug"
+                "Riscv32Debug",
+                "FeatureFloatPoint"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv32-unknown-elf",
@@ -23,7 +24,8 @@
             "name": "riscv32-release",
             "versions": [
                 "Qemu",
-                "Riscv32"
+                "Riscv32",
+                "FeatureFloatPoint"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv32-unknown-elf",
@@ -35,7 +37,8 @@
             "versions": [
                 "Qemu",
                 "Riscv64",
-                "Riscv64Debug"
+                "Riscv64Debug",
+                "FeatureFloatPoint"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-elf",
@@ -46,7 +49,8 @@
             "name": "riscv64-release",
             "versions": [
                 "Qemu",
-                "Riscv64"
+                "Riscv64",
+                "FeatureFloatPoint"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-elf",
@@ -56,7 +60,7 @@
     ],
     "dflags-ldc": [
         "-betterC",
-        "-mattr=+m,+a,+c",
+        "-mattr=+m,+a,+c,+f",
         "--code-model=medium",
         "--nodefaultlib",
         "--function-sections",

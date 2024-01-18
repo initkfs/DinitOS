@@ -13,7 +13,7 @@ import Allocator = os.core.mem.allocs.allocator;
 import Str = os.core.strings.str;
 import MathCore = os.core.math.math_core;
 
-version (KFloatPoint)
+version (FeatureFloatPoint)
 {
     import MathFloat = os.core.math.math_float;
 }

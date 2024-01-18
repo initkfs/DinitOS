@@ -9,7 +9,7 @@ T abs(T)(T x) if (__traits(isArithmetic, T))
     {
         if (x == T.min)
         {
-            return T.max;
+            return x;
         }
     }
 
@@ -22,23 +22,61 @@ unittest
     assert(abs(-1) == 1);
     assert(abs(-2345) == 2345);
     assert(abs(3 - 9) == 6);
-    assert(abs(int.min) == int.max);
+    assert(abs(int.min) == int.min);
 }
 
-T max(T)(T a, T b) if (__traits(isArithmetic, T))
+enum MinMaxMode
 {
-    static if (__traits(isFloating, T))
+    min,
+    max
+}
+
+//floating point comparison will work, but will require runtime routines __floatdidf, __unorddf2, etc.
+auto minmax(MinMaxMode mode = MinMaxMode.min, A, B)(A a, B b)
+        if (__traits(isArithmetic, A)
+        && __traits(isArithmetic, B)
+        && ((__traits(isUnsigned, A) && __traits(isUnsigned, B))
+        || (!__traits(isUnsigned, A) && !__traits(isUnsigned, B))))
+{
+    static if (__traits(isFloating, A))
     {
         import MathFloat = os.core.math.math_float;
 
-        if (MathFloat.isNaN(a) || MathFloat.isNan(b))
+        if (MathFloat.isNaN(a))
         {
-            return T.nan;
+            return A.nan;
         }
     }
 
-    //TODO rough equivalence
-    return (a >= b) ? a : b;
+    static if (__traits(isFloating, B))
+    {
+        import MathFloat = os.core.math.math_float;
+
+        if (MathFloat.isNaN(b))
+        {
+            return B.nan;
+        }
+    }
+
+    static if (mode == MinMaxMode.max)
+    {
+        //TODO rough equivalence
+        return (a >= b) ? a : b;
+    }
+    else static if (mode == MinMaxMode.min)
+    {
+        return (a <= b) ? a : b;
+    }
+    else
+    {
+        static assert(false, "Not supported min max mode: " ~ mode.stringof);
+    }
+
+}
+
+auto max(A, B)(A a, B b)
+{
+    return minmax!(MinMaxMode.max, A, B)(a, b);
 }
 
 unittest
@@ -48,21 +86,13 @@ unittest
     assert(max(-1, 0) == 0);
     assert(max(1, 0) == 1);
     assert(max(10, 5) == 10);
+
+    assert(max(5, 20L) == 20);
 }
 
-T min(T)(T a, T b) if (__traits(isArithmetic, T))
+auto min(A, B)(A a, B b)
 {
-    static if (__traits(isFloating, T))
-    {
-        import MathFloat = os.core.math.math_float;
-
-        if (MathFloat.isNaN(a) || MathFloat.isNan(b))
-        {
-            return T.nan;
-        }
-    }
-
-    return (a <= b) ? a : b;
+    return minmax!(MinMaxMode.min, A, B)(a, b);
 }
 
 unittest
@@ -74,9 +104,9 @@ unittest
 }
 
 //[min..max]
-T clamp(T)(T value, T minValue, T maxValue) if (__traits(isArithmetic, T))
+auto clamp(V, Min, Max)(V value, Min minValue, Max maxValue)
 {
-    return max!T(minValue, min!T(maxValue, value));
+    return max(minValue, min(maxValue, value));
 }
 
 unittest
