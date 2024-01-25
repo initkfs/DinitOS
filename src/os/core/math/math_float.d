@@ -291,3 +291,124 @@ unittest
     // assert(isEqual(parse("3.556"), 3.556f));
     // assert(isEqual(parse!float("564.63333"), 564.63333000f));
 }
+
+T fabs(T)(T x) if (__traits(isFloating, T))
+{
+    return MathFloatExterns._fabs(x);
+}
+
+unittest
+{
+    float a = -15.5;
+    assert(isEqual(fabs(-0f), 0));
+    assert(isEqual(fabs(a), 15.5));
+    assert(isNaN(fabs(float.nan)));
+}
+
+T fac(T)(T num)
+{
+    T r = 1;
+    foreach (i; 2 .. num + 1)
+    {
+        r *= cast(T) i;
+    }
+    return r;
+}
+
+unittest
+{
+    assert(isEqual(fac(5), 120));
+    assert(isEqual(fac(7), 5040));
+}
+
+/** 
+ * Ported from https://github.com/lnsp/tmath
+ * under MIT License https://opensource.org/license/mit/
+ */
+T exp(T)(T x) if (__traits(isArithmetic, T))
+{
+    T r = 0;
+    foreach (i; 0 .. 16)
+    {
+        r += pow(x, i) / fac(i);
+    }
+    return r;
+}
+
+unittest
+{
+    assert(isEqual(exp(2.5f), 12.183298f));
+}
+
+// Newton's method
+T ln(T)(T x) if (__traits(isFloating, T))
+{
+    immutable T initValue = 1;
+    T yn = x - initValue;
+    T yn1 = yn;
+
+    immutable eps = T.epsilon;
+
+    do
+    {
+        yn = yn1;
+        yn1 = yn + 2 * (x - exp(yn)) / (x + exp(yn));
+    }
+    while (fabs(yn - yn1) > eps);
+
+    return yn1;
+}
+
+unittest
+{
+    assert(isEqual(ln(2.5f), 0.9162907318f));
+}
+
+T powf(T)(T value, T base) if (__traits(isFloating, T))
+{
+    return exp(base * ln(value));
+}
+
+unittest
+{
+    assert(isEqual(powf(2.5f, 2.5f), 9.882345f));
+}
+
+T lg(T)(T x) if (__traits(isFloating, T))
+{
+    return ln(x) / ln(10);
+}
+
+T lg(T)(T x, T n) if (__traits(isFloating, T))
+{
+    return ln(x) / ln(n);
+}
+
+T floor(T)(T x) if (__traits(isArithmetic, T))
+{
+    static if (__traits(isFloating, T))
+    {
+        if (!isFinite(x))
+        {
+            return T.nan;
+        }
+    }
+
+    if (x >= 0)
+    {
+        return cast(T) cast(int) x;
+    }
+
+    auto intValue = cast(int) x;
+    return (isEqual(cast(T) intValue, x)) ? intValue : intValue - 1;
+}
+
+unittest
+{
+    assert(isEqual(floor(0.0f), 0f));
+    assert(isEqual(floor(1.0f), 1.0));
+    assert(isEqual(floor(-2.0f), -2.0));
+    assert(isEqual(floor(12.567f), 12.0));
+    assert(isEqual(floor(4.3f), 4));
+    assert(isEqual(floor(2.55f / 1.0f), 2));
+}

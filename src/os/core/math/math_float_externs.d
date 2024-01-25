@@ -16,7 +16,6 @@ version (LDC)
     pragma(LDC_intrinsic, "llvm.cos.f#")
     T _cos(T)(T value);
 
-    pragma(LDC_intrinsic, "llvm.pow.f#")
-    T _pow(T)(T value, T power);
-    
+    pragma(LDC_intrinsic, "llvm.fabs.f#")
+    T _fabs(T)(T value);
 }
