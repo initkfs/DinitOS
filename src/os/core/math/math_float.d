@@ -364,26 +364,36 @@ unittest
     assert(cast(int) exp(10f) == 22025);
 }
 
-// Newton's method
-T ln(T)(T x, T epsilon = 0.000000001) if (__traits(isFloating, T))
+/** 
+ * 
+ * Port from openlibm project https://github.com/JuliaMath/openlibm
+ * https://github.com/JuliaMath/openlibm/blob/master/LICENSE.md
+ */
+auto ln(T)(T x) if (__traits(isArithmetic, T))
 {
-    immutable T initValue = 1;
-    T yn = x - initValue;
-    T yn1 = yn;
-
-    do
+    static if (is(T == double))
     {
-        yn = yn1;
-        yn1 = yn + 2 * (x - exp(yn)) / (x + exp(yn));
-    }
-    while (fabs(yn - yn1) > epsilon);
+        import Logd = os.core.math.libm.logd;
 
-    return yn1;
+        return Logd.__ieee754_logd(x);
+    }
+    else static if (is(T : float))
+    {
+        import Logf = os.core.math.libm.logf;
+
+        return Logf.__ieee754_logf(x);
+    }
+    else
+    {
+        static assert(false, "Not supported type for logarithm: " ~ T.stringof);
+    }
 }
 
 unittest
 {
+    assert(isEqual(ln(5), 1.6094379124f));
     assert(isEqual(ln(2.5f), 0.9162907318f));
+    assert(isEqual(ln(1234567f), 14.026230859f));
 }
 
 T powf(T)(T value, T base) if (__traits(isFloating, T))
@@ -401,7 +411,8 @@ T log10(T)(T x) if (__traits(isFloating, T))
     return ln(x) / ln(cast(T) 10);
 }
 
-unittest {
+unittest
+{
     assert(isEqual(log10(2.5f), 0.397940f));
 }
 
