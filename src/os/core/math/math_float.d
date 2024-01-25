@@ -375,7 +375,7 @@ auto ln(T)(T x) if (__traits(isArithmetic, T))
     {
         import Logd = os.core.math.libm.logd;
 
-        return Logd.__ieee754_logd(x);
+        return Logd.__ieee754_log(x);
     }
     else static if (is(T : float))
     {

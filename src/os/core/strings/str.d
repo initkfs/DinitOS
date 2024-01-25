@@ -432,3 +432,141 @@ unittest
     assert(isEqual('\0', reverse("", buff)));
     assert(isEqual("raboof", reverse("foobar", buff)));
 }
+
+// https://stackoverflow.com/questions/2302969/convert-a-float-to-a-string
+C[] ftoa(T, C = char)(
+    T targetValue,
+    C[] buff,
+    T precision = 0.00000000000001) if (__traits(isFloating, T) && isSomeChar!C)
+{
+    import MathCore = os.core.math.math_core;
+    import MathFloat = os.core.math.math_float;
+
+    if (MathFloat.isNaN(targetValue))
+    {
+        immutable nanStr = "NaN";
+        buff[] = nanStr;
+        return buff[0 .. nanStr.length];
+    }
+
+    if (MathFloat.isPositiveInf(targetValue))
+    {
+        immutable infStr = "+Inf";
+        buff[] = infStr;
+        return buff[0 .. infStr.length];
+    }
+
+    if (MathFloat.isNegativeInf(targetValue))
+    {
+        immutable infStr = "-Inf";
+        buff[] = infStr;
+        return buff[0 .. infStr.length];
+    }
+
+    if (targetValue == 0)
+    {
+        buff[] = '0';
+        return buff[0 .. 1];
+    }
+
+    T n = targetValue;
+    int digit, magn, magn1;
+    int neg = (n < 0);
+    if (neg)
+    {
+        n = -n;
+    }
+    size_t buffIndex;
+    // calculate magnitude
+    magn = cast(int) MathFloat.log10(n);
+    int useExp = (magn >= 14 || (neg && magn >= 9) || magn <= -9);
+    if (neg)
+    {
+        buff[buffIndex++] = '-';
+    }
+
+    // set up for scientific notation
+    if (useExp)
+    {
+        if (magn < 0)
+        {
+            magn -= 1;
+        }
+
+        n = n / MathFloat.pow(10.0f, magn);
+        magn1 = magn;
+        magn = 0;
+    }
+    if (magn < 1.0f)
+    {
+        magn = 0;
+    }
+    // convert the number
+    while (n > precision || magn >= 0)
+    {
+        T weight = MathFloat.pow(cast(T) 10, magn);
+        if (weight > 0 && MathFloat.isFinite(weight))
+        {
+            digit = cast(int) MathFloat.floor(n / weight);
+            n -= (digit * weight);
+            buff[buffIndex++] = cast(char)('0' + digit);
+        }
+        if (magn == 0 && n > 0)
+            buff[buffIndex++] = '.';
+        magn--;
+    }
+    if (useExp)
+    {
+        // convert the exponent
+        int i, j;
+        buff[buffIndex++] = 'e';
+        if (magn1 > 0)
+        {
+            buff[buffIndex++] = '+';
+        }
+        else
+        {
+            buff[buffIndex++] = '-';
+            magn1 = -magn1;
+        }
+        magn = 0;
+        while (magn1 > 0)
+        {
+            buff[buffIndex++] = cast(char)('0' + magn1 % 10);
+            magn1 /= 10;
+            magn++;
+        }
+        buffIndex -= magn;
+        for (i = 0, j = magn - 1; i < j; i++, j--)
+        {
+            // swap without temporary
+            buff[i] ^= buff[j];
+            buff[j] ^= buff[i];
+            buff[i] ^= buff[j];
+        }
+        buffIndex += magn;
+    }
+    //buff[c++] = '\0';
+    return buff[0 .. buffIndex];
+}
+
+unittest
+{
+    import os.core.io.cstdio;
+
+    char[256] buff = 0;
+
+    assert(ftoa(float.nan, buff) == "NaN");
+    assert(ftoa(-float.nan, buff) == "NaN");
+    assert(ftoa(float.infinity, buff) == "+Inf");
+    assert(ftoa(-float.infinity, buff) == "-Inf");
+
+    assert(ftoa(0f, buff) == "0");
+
+    //FIXME
+    //assert(ftoa(1f, buff) == "1");
+
+    assert(ftoa(10f, buff) == "10");
+    assert(ftoa(11.55f, buff) == "11.55000018626448");
+    assert(ftoa(-4.12f, buff) == "-4.11999988269908");
+}
