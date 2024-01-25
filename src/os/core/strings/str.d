@@ -405,9 +405,10 @@ T[] reverse(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
         panic("Buffer length must not be 0");
     }
 
-    if(str.length == 0){
+    if (str.length == 0)
+    {
         buff[0] = strNullByte;
-        return buff[0..1];
+        return buff[0 .. 1];
     }
 
     size_t bufferLength;

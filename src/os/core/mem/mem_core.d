@@ -3,6 +3,23 @@
  */
 module os.core.mem.mem_core;
 
+int memcmp(T)(const T* addr1, const T* addr2, size_t size)
+{
+    const ubyte* addr1Ptr = cast(const(ubyte*)) addr1;
+    const ubyte* addr2Ptr = cast(const(ubyte*)) addr2;
+
+    foreach (i; 0 .. size)
+    {
+        const int cmpRes = addr1Ptr[i] - addr2Ptr[i];
+        if (cmpRes)
+        {
+            return cmpRes;
+        }
+    }
+
+    return 0;
+}
+
 T* memcpy(T)(T* dest, const T* src, size_t lenBytes)
 {
     foreach (i; 0 .. lenBytes)

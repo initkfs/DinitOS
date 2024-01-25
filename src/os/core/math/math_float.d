@@ -148,7 +148,7 @@ unittest
     assert(sqrt(4) == 2);
 }
 
-auto pow(T)(T base, int exponent)
+auto pow(T, Exp = int)(T base, Exp exponent)
 {
     //0^0 must be an error
     if (base == 0)
@@ -174,8 +174,31 @@ auto pow(T)(T base, int exponent)
         }
     }
 
+    // if (exponent < 0)
+    // {
+    //     return 1 / pow(base, -exponent);
+    // }
+
+    // T result = 1;
+    // foreach (i; 1 .. exponent + 1)
+    // {
+    //     result *= base;
+    // }
+    // return result;
+
     immutable result = pow(base, exponent / 2);
-    immutable mod2Exp = exponent % 2;
+
+    static if (__traits(isFloating, Exp))
+    {
+        import MathFloat = os.core.math.math_float;
+
+        immutable mod2Exp = MathFloat.modf(exponent, cast(T) 2);
+    }
+    else
+    {
+        immutable mod2Exp = exponent % 2;
+    }
+
     if (mod2Exp < 0)
     {
         return result * result / base;
@@ -305,7 +328,7 @@ unittest
     assert(isNaN(fabs(float.nan)));
 }
 
-T fac(T)(T num)
+T fac(T = float)(size_t num)
 {
     T r = 1;
     foreach (i; 2 .. num + 1)
@@ -325,36 +348,35 @@ unittest
  * Ported from https://github.com/lnsp/tmath
  * under MIT License https://opensource.org/license/mit/
  */
-T exp(T)(T x) if (__traits(isArithmetic, T))
+T exp(T = float)(T x, size_t steps = 25) if (__traits(isArithmetic, T))
 {
     T r = 0;
-    foreach (i; 0 .. 16)
+    foreach (i; 0 .. steps)
     {
-        r += pow(x, i) / fac(i);
+        r += pow(x, i) / fac!T(i);
     }
     return r;
 }
 
 unittest
 {
-    assert(isEqual(exp(2.5f), 12.183298f));
+    assert(isEqual(exp(2.5f), 12.182493960f));
+    assert(cast(int) exp(10f) == 22025);
 }
 
 // Newton's method
-T ln(T)(T x) if (__traits(isFloating, T))
+T ln(T)(T x, T epsilon = 0.000000001) if (__traits(isFloating, T))
 {
     immutable T initValue = 1;
     T yn = x - initValue;
     T yn1 = yn;
-
-    immutable eps = T.epsilon;
 
     do
     {
         yn = yn1;
         yn1 = yn + 2 * (x - exp(yn)) / (x + exp(yn));
     }
-    while (fabs(yn - yn1) > eps);
+    while (fabs(yn - yn1) > epsilon);
 
     return yn1;
 }
@@ -371,15 +393,19 @@ T powf(T)(T value, T base) if (__traits(isFloating, T))
 
 unittest
 {
-    assert(isEqual(powf(2.5f, 2.5f), 9.882345f));
+    assert(isEqual(powf(2.5f, 2.5f), 9.882118f));
 }
 
-T lg(T)(T x) if (__traits(isFloating, T))
+T log10(T)(T x) if (__traits(isFloating, T))
 {
-    return ln(x) / ln(10);
+    return ln(x) / ln(cast(T) 10);
 }
 
-T lg(T)(T x, T n) if (__traits(isFloating, T))
+unittest {
+    assert(isEqual(log10(2.5f), 0.397940f));
+}
+
+T log(T)(T x, T n) if (__traits(isFloating, T))
 {
     return ln(x) / ln(n);
 }
@@ -411,4 +437,9 @@ unittest
     assert(isEqual(floor(12.567f), 12.0));
     assert(isEqual(floor(4.3f), 4));
     assert(isEqual(floor(2.55f / 1.0f), 2));
+}
+
+T modf(T)(T x, T y)
+{
+    return y * ((x / y) - floor(x / y));
 }
