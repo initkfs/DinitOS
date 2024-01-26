@@ -364,13 +364,39 @@ unittest
     assert(cast(int) exp(10f) == 22025);
 }
 
-/** 
- * 
- * Port from openlibm project https://github.com/JuliaMath/openlibm
- * https://github.com/JuliaMath/openlibm/blob/master/LICENSE.md
- */
 auto ln(T)(T x) if (__traits(isArithmetic, T))
 {
+    //x > 0, x != 1;
+    if (x == 1)
+    {
+        //cast(T) 0
+        return 0;
+    }
+
+    if (x == 0)
+    {
+        static if (__traits(isFloating, T))
+        {
+            return -T.infinity;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    if (x < 0)
+    {
+        static if (__traits(isFloating, T))
+        {
+            return T.nan;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     static if (is(T == double))
     {
         import Logd = os.core.math.libm.logd;
@@ -391,6 +417,9 @@ auto ln(T)(T x) if (__traits(isArithmetic, T))
 
 unittest
 {
+    assert(isEqual(ln(1), 0));
+    assert(isEqual(ln(1f), 0));
+    assert(isNaN(ln(-1f)));
     assert(isEqual(ln(5), 1.6094379124f));
     assert(isEqual(ln(2.5f), 0.9162907318f));
     assert(isEqual(ln(1234567f), 14.026230859f));
@@ -413,6 +442,7 @@ T log10(T)(T x) if (__traits(isFloating, T))
 
 unittest
 {
+    //assert(isEqual(log10(1f), 0));
     assert(isEqual(log10(2.5f), 0.397940f));
 }
 

@@ -471,21 +471,21 @@ C[] ftoa(T, C = char)(
 
     T n = targetValue;
     int digit, magn, magn1;
-    int neg = (n < 0);
-    if (neg)
+    bool isNeg = n < 0;
+    if (isNeg)
     {
         n = -n;
     }
     size_t buffIndex;
     // calculate magnitude
     magn = cast(int) MathFloat.log10(n);
-    int useExp = (magn >= 14 || (neg && magn >= 9) || magn <= -9);
-    if (neg)
+    int useExp = (magn >= 14 || (isNeg && magn >= 9) || magn <= -9);
+    if (isNeg)
     {
         buff[buffIndex++] = '-';
     }
 
-    // set up for scientific notation
+    //set up for scientific notation
     if (useExp)
     {
         if (magn < 0)
@@ -493,18 +493,18 @@ C[] ftoa(T, C = char)(
             magn -= 1;
         }
 
-        n = n / MathFloat.pow(10.0f, magn);
+        n = n / MathFloat.pow!T(10.0f, magn);
         magn1 = magn;
         magn = 0;
     }
-    if (magn < 1.0f)
+    if (magn < 1)
     {
         magn = 0;
     }
-    // convert the number
+    //convert the number
     while (n > precision || magn >= 0)
     {
-        T weight = MathFloat.pow(cast(T) 10, magn);
+        T weight = MathFloat.pow!T(10, magn);
         if (weight > 0 && MathFloat.isFinite(weight))
         {
             digit = cast(int) MathFloat.floor(n / weight);
@@ -512,9 +512,13 @@ C[] ftoa(T, C = char)(
             buff[buffIndex++] = cast(char)('0' + digit);
         }
         if (magn == 0 && n > 0)
+        {
             buff[buffIndex++] = '.';
+        }
+
         magn--;
     }
+    
     if (useExp)
     {
         // convert the exponent
@@ -562,10 +566,8 @@ unittest
     assert(ftoa(-float.infinity, buff) == "-Inf");
 
     assert(ftoa(0f, buff) == "0");
-
-    //FIXME
-    //assert(ftoa(1f, buff) == "1");
-
+    assert(ftoa(1f, buff) == "1");
+    assert(ftoa(-1f, buff) == "-1");
     assert(ftoa(10f, buff) == "10");
     assert(ftoa(11.55f, buff) == "11.55000018626448");
     assert(ftoa(-4.12f, buff) == "-4.11999988269908");
