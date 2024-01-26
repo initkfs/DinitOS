@@ -518,7 +518,7 @@ C[] ftoa(T, C = char)(
 
         magn--;
     }
-    
+
     if (useExp)
     {
         // convert the exponent
@@ -568,7 +568,87 @@ unittest
     assert(ftoa(0f, buff) == "0");
     assert(ftoa(1f, buff) == "1");
     assert(ftoa(-1f, buff) == "-1");
-    assert(ftoa(10f, buff) == "10");
+    assert(ftoa(5f, buff) == "5");
+    assert(ftoa(-5f, buff) == "-5");
+    assert(ftoa(1000f, buff) == "1000");
     assert(ftoa(11.55f, buff) == "11.55000018626448");
     assert(ftoa(-4.12f, buff) == "-4.11999988269908");
+}
+
+const(char[]) formatb(char placeholder = '%', Args...)(const(char[]) pattern, char[] buff, Args args)
+        if (Args.length > 0)
+{
+
+    auto formatter(Fargs...)(size_t argIndex, char patternChar, Fargs fargs)
+    {
+        foreach (i, arg; fargs)
+        {
+            if (i != argIndex)
+            {
+                continue;
+            }
+
+            //TODO patterns
+            //if (patternChar == 's' || patternChar == 'd')
+            //{
+            static if (__traits(isArithmetic, arg))
+            {
+                char[64] tempBuf = 0;
+                static if (is(typeof(arg) : int))
+                {
+                    auto res = atoa(arg, tempBuf);
+                }
+                else static if (is(typeof(arg) == float))
+                {
+                    auto res = ftoa!float(arg, tempBuf);
+                }
+
+                buff[bufferIndex .. bufferIndex + res.length] = res;
+                bufferIndex += res.length;
+            }
+            else static if (is(typeof(arg) : string))
+            {
+                size_t strLength = arg.length;
+                buff[bufferIndex .. bufferIndex + strLength] = arg;
+                bufferIndex += strLength;
+            }
+            //}
+        }
+    }
+
+    const size_t argsSize = args.length;
+    size_t bufferIndex, argIndex;
+    bool isProcessArg;
+    foreach (char patternChar; pattern)
+    {
+        if (isProcessArg)
+        {
+            if (argIndex >= argsSize)
+            {
+                panic("Not enough arguments to format string");
+            }
+            formatter(argIndex, patternChar, args);
+            argIndex++;
+            isProcessArg = false;
+            continue;
+        }
+
+        if (patternChar == placeholder)
+        {
+            isProcessArg = true;
+            continue;
+        }
+
+        buff[bufferIndex++] = patternChar;
+    }
+
+    return buff[0 .. bufferIndex];
+}
+
+unittest
+{
+    char[256] buff = 0;
+    assert(formatb(" foo %s baz ", buff, "bar") == " foo bar baz ");
+    assert(formatb(" foo %s baz ", buff, 124) == " foo 124 baz ");
+    assert(formatb(" foo %s baz %s ban", buff, 124, "bar") == " foo 124 baz bar ban");
 }
