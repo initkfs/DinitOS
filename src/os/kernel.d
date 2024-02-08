@@ -11,6 +11,7 @@ import UPtr = os.core.mem.unique_ptr;
 import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
 import Str = os.core.strings.str;
+import Hash = os.core.strings.hash;
 import MathCore = os.core.math.math_core;
 import MathStrict = os.core.math.math_strict;
 import MathRandom = os.core.math.math_random;
@@ -63,6 +64,7 @@ private void runTests()
         MemCore,
         UPtr,
         Str,
+        Hash,
         StackStrMod,
         MathCore,
         MathStrict,
