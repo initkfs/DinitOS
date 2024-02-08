@@ -469,7 +469,9 @@ C[] ftoa(T, C = char)(
         return buff[0 .. 1];
     }
 
-    T n = targetValue;
+    import std.traits: Unqual;
+
+    Unqual!T n = targetValue;
     int digit, magn, magn1;
     bool isNeg = n < 0;
     if (isNeg)

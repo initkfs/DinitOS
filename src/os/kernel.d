@@ -12,6 +12,7 @@ import StackStrMod = os.cstd.strings.stack_str;
 import Allocator = os.core.mem.allocs.allocator;
 import Str = os.core.strings.str;
 import MathCore = os.core.math.math_core;
+import Units = os.core.util.units;
 
 version (FeatureFloatPoint)
 {
@@ -62,7 +63,8 @@ private void runTests()
         Str,
         StackStrMod,
         MathCore,
-        MathFloat
+        MathFloat,
+        Units
     );
 
     foreach (m; testModules)

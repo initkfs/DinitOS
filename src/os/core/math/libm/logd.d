@@ -26,7 +26,7 @@ __gshared enum : double
     Lg7 = 1.479819860511658591e-01
 }
 
-double zero = 0.0;
+__gshared double zero = 0.0;
 
 double __ieee754_log(double x)
 {

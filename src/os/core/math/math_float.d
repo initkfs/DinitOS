@@ -442,8 +442,9 @@ T log10(T)(T x) if (__traits(isFloating, T))
 
 unittest
 {
-    //assert(isEqual(log10(1f), 0));
+    assert(isEqual(log10(1f), 0));
     assert(isEqual(log10(2.5f), 0.397940f));
+    assert(isEqual(log10(1024f), 3.01029995663));
 }
 
 T log(T)(T x, T n) if (__traits(isFloating, T))

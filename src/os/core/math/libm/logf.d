@@ -23,7 +23,7 @@ __gshared enum : float
     Lg4 = 0xf89e26.0p-26 /* 0.24279078841 */
 }
 
-float zero = 0.0;
+__gshared float zero = 0.0;
 
 public:
 
