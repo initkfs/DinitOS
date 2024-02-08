@@ -13,6 +13,7 @@ import Allocator = os.core.mem.allocs.allocator;
 import Str = os.core.strings.str;
 import MathCore = os.core.math.math_core;
 import MathStrict = os.core.math.math_strict;
+import MathRandom = os.core.math.math_random;
 import Units = os.core.util.units;
 
 version (FeatureFloatPoint)
@@ -66,6 +67,7 @@ private void runTests()
         MathCore,
         MathStrict,
         MathFloat,
+        MathRandom,
         Units
     );
 
