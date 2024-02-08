@@ -66,3 +66,39 @@ unittest
     enum s = "The quick brown fox jumps over the lazy dog";
     assert(elfhash(s) == 0x04280c57);
 }
+
+uint djb2(const char[] str)
+{
+    uint hash = 5381;
+    foreach (ubyte ch; str)
+    {
+        //hash = hash * 33 + ch
+        hash = ch + hash * 33;
+    }
+
+    return hash;
+}
+
+unittest
+{
+    enum s = "The quick brown fox jumps over the lazy dog";
+    assert(djb2(s) == 0x34cc38de);
+}
+
+uint krhash(const char[] str)
+{
+    uint hash;
+
+    foreach (ubyte ch; str)
+    {
+        hash = ch + hash * 31;
+    }
+
+    return hash;
+}
+
+unittest
+{
+    enum s = "The quick brown fox jumps over the lazy dog";
+    assert(krhash(s) == 0xdbacdd53);
+}
