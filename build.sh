@@ -78,7 +78,7 @@ emulator=
 case $archType in
   r32)
     dubConfigType=riscv32
-    assemblyMarchType=rv32imafc
+    assemblyMarchType=rv32i2p1_m2p0_a2p1_f2p2_c2p0
     mabi=ilp32f
     assemblyMarchSymbol=rv32
     linkerMarchType=elf32lriscv
@@ -86,7 +86,7 @@ case $archType in
     ;;
   r64)
     dubConfigType=riscv64
-    assemblyMarchType=rv64imafdc
+    assemblyMarchType=rv64i2p1_m2p0_a2p1_f2p2_d2p2_c2p0
     mabi=lp64d
     assemblyMarchSymbol=rv64
     linkerMarchType=elf64lriscv
@@ -104,7 +104,7 @@ fi
 
 echo "Build $buildType, arch: $archType, dub: $dubConfigType, asm: $assemblyMarchType"
 
-time dub --quiet build --compiler=ldc2leg "--config=$dubConfigType" "--build=$buildType"
+time dub --quiet build --compiler=ldc2 "--config=$dubConfigType" "--build=$buildType"
 if [[ $? -ne 0 ]]; then
     echo "DUB error" >&2
     exit 1
