@@ -78,14 +78,16 @@ emulator=
 case $archType in
   r32)
     dubConfigType=riscv32
-    assemblyMarchType=rv32imac
+    assemblyMarchType=rv32imafc
+    mabi=ilp32f
     assemblyMarchSymbol=rv32
     linkerMarchType=elf32lriscv
     emulator=qemu-system-riscv32
     ;;
   r64)
     dubConfigType=riscv64
-    assemblyMarchType=rv64imac
+    assemblyMarchType=rv64imafdc
+    mabi=lp64d
     assemblyMarchSymbol=rv64
     linkerMarchType=elf64lriscv
     emulator=qemu-system-riscv64
@@ -102,18 +104,19 @@ fi
 
 echo "Build $buildType, arch: $archType, dub: $dubConfigType, asm: $assemblyMarchType"
 
-time dub --quiet build --compiler=ldc2 "--config=$dubConfigType" "--build=$buildType"
+time dub --quiet build --compiler=ldc2leg "--config=$dubConfigType" "--build=$buildType"
 if [[ $? -ne 0 ]]; then
     echo "DUB error" >&2
     exit 1
 fi
 
-riscv64-unknown-elf-as -march=$assemblyMarchType --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
+riscv64-unknown-elf-as -march=$assemblyMarchType -mabi=$mabi  --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
 if [[ $? -ne 0 ]]; then
     echo "Boot build error" >&2
     exit 1
 fi
 
+#https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
 riscv64-unknown-elf-ld --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/link/riscv/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2

@@ -83,12 +83,12 @@ bool isEqualEps(T)(T x, T y, T epsilon = T.epsilon) if (__traits(isArithmetic, T
     return false;
 }
 
-bool isEqual(float x, float y)
+bool isEqual(float x, float y) pure @safe
 {
     return isEqualEps(x, y);
 }
 
-static if (size_t.sizeof >= double.sizeof)
+version (PTS64)
 {
     bool isEqual(double x, double y)
     {
@@ -98,10 +98,10 @@ static if (size_t.sizeof >= double.sizeof)
 
 unittest
 {
-    assert(isEqual(0.0, 0.0));
-    assert(!isEqual(0.0, 0.1));
-    assert(!isEqual(0.3, 0.3000004));
-    assert(isEqual(0.3, 0.30000004));
+    assert(isEqual(0.0f, 0.0f));
+    assert(!isEqual(0.0f, 0.1f));
+    assert(!isEqual(0.3f, 0.3000004f));
+    assert(isEqual(0.3f, 0.30000004f));
 }
 
 auto sqrt(T)(T value) if (__traits(isArithmetic, T))
@@ -323,8 +323,8 @@ T fabs(T)(T x) if (__traits(isFloating, T))
 unittest
 {
     float a = -15.5;
-    assert(isEqual(fabs(-0f), 0));
-    assert(isEqual(fabs(a), 15.5));
+    assert(isEqual(fabs(-0f), 0f));
+    assert(isEqual(fabs(a), 15.5f));
     assert(isNaN(fabs(float.nan)));
 }
 
@@ -340,8 +340,8 @@ T fac(T = float)(size_t num)
 
 unittest
 {
-    assert(isEqual(fac(5), 120));
-    assert(isEqual(fac(7), 5040));
+    assert(isEqual(fac(5), 120f));
+    assert(isEqual(fac(7), 5040f));
 }
 
 /** 
@@ -417,10 +417,10 @@ auto ln(T)(T x) if (__traits(isArithmetic, T))
 
 unittest
 {
-    assert(isEqual(ln(1), 0));
-    assert(isEqual(ln(1f), 0));
+    assert(isEqual(ln(1f), 0f));
+    assert(isEqual(ln(1f), 0f));
     assert(isNaN(ln(-1f)));
-    assert(isEqual(ln(5), 1.6094379124f));
+    assert(isEqual(ln(5f), 1.6094379124f));
     assert(isEqual(ln(2.5f), 0.9162907318f));
     assert(isEqual(ln(1234567f), 14.026230859f));
 }
@@ -442,9 +442,9 @@ T log10(T)(T x) if (__traits(isFloating, T))
 
 unittest
 {
-    assert(isEqual(log10(1f), 0));
+    assert(isEqual(log10(1f), 0f));
     assert(isEqual(log10(2.5f), 0.397940f));
-    assert(isEqual(log10(1024f), 3.01029995663));
+    assert(isEqual(log10(1024f), 3.01029995663f));
 }
 
 T log(T)(T x, T n) if (__traits(isFloating, T))
@@ -474,11 +474,11 @@ T floor(T)(T x) if (__traits(isArithmetic, T))
 unittest
 {
     assert(isEqual(floor(0.0f), 0f));
-    assert(isEqual(floor(1.0f), 1.0));
-    assert(isEqual(floor(-2.0f), -2.0));
-    assert(isEqual(floor(12.567f), 12.0));
-    assert(isEqual(floor(4.3f), 4));
-    assert(isEqual(floor(2.55f / 1.0f), 2));
+    assert(isEqual(floor(1.0f), 1.0f));
+    assert(isEqual(floor(-2.0f), -2.0f));
+    assert(isEqual(floor(12.567f), 12.0f));
+    assert(isEqual(floor(4.3f), 4f));
+    assert(isEqual(floor(2.55f / 1.0f), 2f));
 }
 
 T modf(T)(T x, T y)

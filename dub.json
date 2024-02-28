@@ -17,7 +17,8 @@
             ],
             "dflags-ldc": [
                 "-mtriple=riscv32-unknown-elf",
-                "--unittest"
+                "--unittest",
+                "--mabi=ilp32f"
             ]
         },
         {
@@ -29,7 +30,8 @@
             ],
             "dflags-ldc": [
                 "-mtriple=riscv32-unknown-elf",
-                "-Oz"
+                "-Oz",
+                "--mabi=ilp32f"
             ]
         },
         {
@@ -38,11 +40,14 @@
                 "Qemu",
                 "Riscv64",
                 "Riscv64Debug",
-                "FeatureFloatPoint"
+                "FeatureFloatPoint",
+                "PTS64"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-elf",
-                "--unittest"
+                "--unittest",
+                "-mattr=+m,+a,+c,+f,+d",
+                "--mabi=lp64d"
             ]
         },
         {
@@ -50,11 +55,14 @@
             "versions": [
                 "Qemu",
                 "Riscv64",
-                "FeatureFloatPoint"
+                "FeatureFloatPoint",
+                "PTS64"
             ],
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-elf",
-                "-Oz"
+                "-Oz",
+                "-mattr=+m,+a,+c,+f,+d",
+                "--mabi=lp64d"
             ]
         }
     ],
