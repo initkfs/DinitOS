@@ -3,7 +3,9 @@
  */
 module os.core.thread.task;
 
-import os.core.io.cstdio;;
+import os.core.io.cstdio;
+
+import Syslog = os.core.log.syslog;
 
 enum taskMaxCount = 16;
 enum taskStacksSize = 1024;
@@ -61,16 +63,17 @@ void switchContextToTask(size_t i)
 
 void switchTasks()
 {
-    println("Switch tasks");
     if (currentTaskIndex >= taskCount)
     {
         currentTaskIndex = 0;
     }
 
+    Syslog.trace("Switch tasks");
+
     auto oldTask = contextCurrent;
     auto newTask = &tasks[currentTaskIndex];
 
-    contextCurrent = newTask;
+    contextCurrent = newTask;    
 
     currentTaskIndex++;
 

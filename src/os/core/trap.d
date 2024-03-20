@@ -9,6 +9,8 @@ import os.core.io.cstdio;
 import os.core.thread.task;
 import os.core.timer;
 
+import Syslog = os.core.log.syslog;
+
 extern (C) void set_minterrupt_vector_trap();
 
 void trapInit()
@@ -32,22 +34,22 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
         switch (causeCode)
         {
             case 0:
-                println("User software interrupt");
+                Syslog.trace("User software interrupt");
                 break;
             case 1:
-                println("Supervisor software interrupt");
+                Syslog.trace("Supervisor software interrupt");
                 break;
             case 3:
-                println("Machine software interrupt.");
+                Syslog.trace("Machine software interrupt.");
                 break;
             case 4:
-                println("User timer interrupt.");
+                Syslog.trace("User timer interrupt.");
                 break;
             case 5:
-                println("Supervisor timer interrupt.");
+                Syslog.trace("Supervisor timer interrupt.");
                 break;
             case 7:
-                println("Machine timer interrupt.");
+                Syslog.trace("Machine timer interrupt.");
 
                 // disable timer interrupts.
                 Interrupts.interruptIsEnable(
@@ -58,16 +60,16 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
                 Interrupts.interruptIsEnable(Interrupts.interruptIsEnable | Interrupts.MIE_MTIE);
                 break;
             case 8:
-                println("User external interrupt.");
+                Syslog.trace("User external interrupt.");
                 break;
             case 9:
-                println("Supervisor external interrupt.");
+                Syslog.trace("Supervisor external interrupt.");
                 break;
             case 11:
-                println("Machine external interrupt.");
+                Syslog.trace("Machine external interrupt.");
                 break;
             default:
-                println("Unknown interrupt.");
+                Syslog.trace("Unknown interrupt.");
                 break;
         }
     }

@@ -7,6 +7,7 @@ import os.core.io.cstdio;
 
 import Harts = os.core.arch.riscv.harts;
 import Interrupts = os.core.arch.riscv.minterrupts;
+import Syslog = os.core.log.syslog;
 
 enum interval = 20000000;
 __gshared TimerScratch[Interrupts.numCores] timerMscratchs;
@@ -43,7 +44,7 @@ extern(C) size_t timer_handler(size_t epc, size_t cause)
 
     Interrupts.enableMInterrupts;
 
-    println("Timer handler");
+    Syslog.trace("Call timer handler");
 
     return epc;
 }

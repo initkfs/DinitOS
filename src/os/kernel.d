@@ -48,7 +48,7 @@ __gshared
     int sharedCounter;
     Spinlock.Lock lock;
 
-    bool isTimer;
+    bool isTimer = true;
 }
 
 private void runTests()
@@ -119,30 +119,20 @@ extern (C) void dstart()
     Allocator.free = &BlockAllocator.free;
 
     runTests;
-
-    // Spinlock.initLock(&lock);
+    
+    Spinlock.initLock(&lock);
 
     auto tid = taskCreate(&task0);
     auto tid2 = taskCreate(&task1);
     switchContextToTask(tid);
-    // taskCreate(&task1);
-
-    // size_t currentTask = 0;
-    // while (true)
-    // {
-    //     Syslog.trace("Run next task.");
-    //     switchContextToTask(currentTask);
-    //     Syslog.trace("Back to OS");
-    //     currentTask = (currentTask + 1) % taskCount;
-    // }
 }
 
 void task0()
 {
-    Syslog.trace("Task0 created.");
+    Syslog.trace("Enable LED1.");
     while (true)
     {
-        //Syslog.trace("Task0: running...");
+        Syslog.trace("LED1 ON");
         // foreach (i; 0 .. 50)
         // {
         //     Spinlock.acquire(&lock);
@@ -156,10 +146,10 @@ void task0()
 
 void task1()
 {
-    Syslog.trace("Task1 created.");
+    Syslog.trace("Enable LED2.");
     while (true)
     {
-        //Syslog.trace("Task1: running...");
+        Syslog.trace("LED2 ON");
         delayTicks;
     }
 }
