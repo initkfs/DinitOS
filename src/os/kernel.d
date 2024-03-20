@@ -16,6 +16,7 @@ import MathCore = os.core.math.math_core;
 import MathStrict = os.core.math.math_strict;
 import MathRandom = os.core.math.math_random;
 import Units = os.core.util.units;
+import Bits = os.core.bits;
 
 version (FeatureFloatPoint)
 {
@@ -70,6 +71,7 @@ private void runTests()
         MathStrict,
         MathFloat,
         MathRandom,
+        Bits,
         Units
     );
 
