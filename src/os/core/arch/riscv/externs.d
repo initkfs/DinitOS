@@ -3,7 +3,7 @@
  */
 module os.core.arch.riscv.externs;
 
-extern (C):
+extern (C) @trusted:
 
 void set_minterrupt_vector_timer();
 size_t m_get_hart_id();
