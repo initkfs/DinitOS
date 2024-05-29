@@ -26,23 +26,23 @@ void timerInit()
 
     writeIntevalToTimer(id);
 
-    TimerScratch* scratch = &timerMscratchs[id];
+    TimerScratch* mScratch = &timerMscratchs[id];
     //TODO or 64-bit timer register?
-    scratch.clintCmpRegister = cast(size_t) Interrupts.timeRegCmpAddr(id);
-    scratch.interval = interval;
-    Interrupts.scratch(cast(size_t) scratch.saveRegisters.ptr);
+    mScratch.clintCmpRegister = cast(size_t) Interrupts.mTimeRegCmpAddr(id);
+    mScratch.interval = interval;
+    Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
-    Interrupts.interruptIsEnable(Interrupts.interruptIsEnable | Interrupts.MIE_MTIE);
+    Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
 }
 
 extern(C) size_t timer_handler(size_t epc, size_t cause)
 {
-    Interrupts.disableMInterrupts;
+    Interrupts.mInterruptsDisable;
 
     auto id = Harts.mhartId();
     writeIntevalToTimer(id);
 
-    Interrupts.enableMInterrupts;
+    Interrupts.mInterruptsEnable;
 
     Syslog.trace("Call timer handler");
 
@@ -51,7 +51,7 @@ extern(C) size_t timer_handler(size_t epc, size_t cause)
 
 private void writeIntevalToTimer(size_t mhartId)
 {
-    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.timeRegCmpAddr(mhartId);
-    ulong currTimeValue = *(cast(ulong*) Interrupts.time());
+    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.mTimeRegCmpAddr(mhartId);
+    ulong currTimeValue = *(cast(ulong*) Interrupts.mTime());
     *mtimeCmpPtr = currTimeValue + interval;
 }

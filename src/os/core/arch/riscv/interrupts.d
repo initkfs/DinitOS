@@ -24,62 +24,62 @@ enum MIE_MTIE = (1 << 7);
 // software
 enum MIE_MSIE = (1 << 3);
 
-ulong timeRegCmpAddr(size_t hartid)
+ulong mTimeRegCmpAddr(size_t hartid)
 {
     return clintBase + clintCompareRegHurtOffset + numCores * hartid;
 }
 
-ulong time()
+ulong mTime()
 {
     return clintBase + clintTimerRegOffset;
 }
 
-size_t status()
+size_t mStatus()
 {
     return Externs.m_get_status;
 }
 
-void status(size_t status)
+void mStatus(size_t status)
 {
     Externs.m_set_status(status);
 }
 
-void exceptionCounter(size_t c)
+void mExceptionCounter(size_t c)
 {
     Externs.m_set_exception_counter(c);
 }
 
-size_t exceptionCounter()
+size_t mExceptionCounter()
 {
     return Externs.m_get_exception_counter;
 }
 
-void scratch(size_t value)
+void mScratch(size_t value)
 {
     Externs.m_set_scratch(value);
 }
 
-void interruptVector(size_t value)
+void mInterruptVector(size_t value)
 {
     return Externs.m_set_interrupt_vector(value);
 }
 
-size_t interruptIsEnable()
+size_t mInterruptIsEnable()
 {
     return Externs.m_get_interrupt_enable;
 }
 
-void interruptIsEnable(size_t value)
+void mInterruptIsEnable(size_t value)
 {
     Externs.m_set_interrupt_enable(value);
 }
 
-void disableMInterrupts()
+void mInterruptsDisable()
 {
-    interruptIsEnable(~((~interruptIsEnable) | MIE_MTIE));
+    mInterruptIsEnable(~((~mInterruptIsEnable) | MIE_MTIE));
 }
 
-void enableMInterrupts()
+void mInterruptsEnable()
 {
-    interruptIsEnable(interruptIsEnable | MIE_MTIE);
+    mInterruptIsEnable(mInterruptIsEnable | MIE_MTIE);
 }

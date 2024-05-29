@@ -17,7 +17,7 @@ void trapInit()
 {
     set_minterrupt_vector_trap();
 
-    Interrupts.status(Interrupts.status | Interrupts.MSTATUS_MIE);
+    Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
 }
 
 extern (C) size_t trap_handler(size_t epc, size_t cause)
@@ -52,12 +52,12 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
                 Syslog.trace("Machine timer interrupt.");
 
                 // disable timer interrupts.
-                Interrupts.interruptIsEnable(
-                    ~((~Interrupts.interruptIsEnable) | Interrupts.MIE_MTIE));
+                Interrupts.mInterruptIsEnable(
+                    ~((~Interrupts.mInterruptIsEnable) | Interrupts.MIE_MTIE));
                 timer_handler(epc, cause);
                 retPc = cast(size_t)&switchTasks;
                 // enable timer interrupts.
-                Interrupts.interruptIsEnable(Interrupts.interruptIsEnable | Interrupts.MIE_MTIE);
+                Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
                 break;
             case 8:
                 Syslog.trace("User external interrupt.");
