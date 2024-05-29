@@ -3,7 +3,7 @@
  */
 module os.core.trap;
 
-import Interrupts = os.core.arch.riscv.minterrupts;
+import Interrupts = os.core.arch.riscv.interrupts;
 
 import os.core.io.cstdio;
 import os.core.thread.task;

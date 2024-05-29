@@ -1,10 +1,9 @@
 /**
  * Authors: initkfs
  */
-module os.core.arch.riscv.minterrupts;
+module os.core.arch.riscv.interrupts;
 
-import ldc.llvmasm;
-
+import Externs = os.core.arch.riscv.externs;
 import Platform = os.core.arch.riscv.platform;
 
 enum clintBase = Platform.clintBase;
@@ -37,44 +36,42 @@ ulong time()
 
 size_t status()
 {
-    size_t id = __asm!size_t("csrr a0, mstatus", "=r");
-    return id;
+    return Externs.m_get_status;
 }
 
 void status(size_t status)
 {
-    __asm("csrw mstatus, a0", "r", status);
+    Externs.m_set_status(status);
 }
 
 void exceptionCounter(size_t c)
 {
-    __asm("csrw mepc, $0", "r", c);
+    Externs.m_set_exception_counter(c);
 }
 
 size_t exceptionCounter()
 {
-    size_t counter = __asm!size_t("csrr $0, mepc", "=r");
-    return counter;
+    return Externs.m_get_exception_counter;
 }
 
 void scratch(size_t value)
 {
-    __asm("csrw mscratch, $0", "r", value);
+    Externs.m_set_scratch(value);
 }
 
 void interruptVector(size_t value)
 {
-    __asm("csrw mtvec, $0", "r", value);
+    return Externs.m_set_interrupt_vector(value);
 }
 
 size_t interruptIsEnable()
 {
-    return __asm!size_t("csrr $0, mie", "=r");
+    return Externs.m_get_interrupt_enable;
 }
 
 void interruptIsEnable(size_t value)
 {
-    __asm("csrw mie, $0", "r", value);
+    Externs.m_set_interrupt_enable(value);
 }
 
 void disableMInterrupts()

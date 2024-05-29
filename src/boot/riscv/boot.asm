@@ -216,6 +216,44 @@ _hlt:
 .endif  
 .endm
 
+.globl m_get_hart_id
+m_get_hart_id:
+csrr a0, mhartid
+ret
+.globl m_get_status
+m_get_status:
+csrr a0, mstatus
+ret
+.globl m_set_status
+m_set_status:
+csrw mstatus, a0
+ret
+.globl m_set_exception_counter
+m_set_exception_counter:
+csrw mepc, a0
+ret
+.globl m_get_exception_counter
+m_get_exception_counter:
+csrr a0, mepc
+ret
+.globl m_set_scratch
+m_set_scratch:
+csrw mscratch, a0
+ret
+.globl m_get_interrupt_enable
+m_get_interrupt_enable:
+csrr a0, mie
+ret
+.globl m_set_interrupt_enable
+m_set_interrupt_enable:
+csrw mie, a0
+ret
+
+.globl m_set_interrupt_vector
+m_set_interrupt_vector:
+csrw mtvec, a0
+ret
+
 .globl context_switch
 context_switch:
     context_save a0  # a0 old context ptr

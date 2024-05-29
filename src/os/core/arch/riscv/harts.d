@@ -3,10 +3,9 @@
  */
 module os.core.arch.riscv.harts;
 
-import ldc.llvmasm;
+import Externs = os.core.arch.riscv.externs;
 
-size_t hartId()
+size_t mhartId()
 {
-    size_t id = __asm!size_t("csrr $0, mhartid", "=r");
-    return id;
+    return Externs.m_get_hart_id;
 }

@@ -6,7 +6,7 @@ module os.core.timer;
 import os.core.io.cstdio;
 
 import Harts = os.core.arch.riscv.harts;
-import Interrupts = os.core.arch.riscv.minterrupts;
+import Interrupts = os.core.arch.riscv.interrupts;
 import Syslog = os.core.log.syslog;
 
 enum interval = 20000000;
@@ -22,7 +22,7 @@ struct TimerScratch {
 
 void timerInit()
 {
-    size_t id = Harts.hartId();
+    size_t id = Harts.mhartId();
 
     writeIntevalToTimer(id);
 
@@ -39,7 +39,7 @@ extern(C) size_t timer_handler(size_t epc, size_t cause)
 {
     Interrupts.disableMInterrupts;
 
-    auto id = Harts.hartId();
+    auto id = Harts.mhartId();
     writeIntevalToTimer(id);
 
     Interrupts.enableMInterrupts;
@@ -49,9 +49,9 @@ extern(C) size_t timer_handler(size_t epc, size_t cause)
     return epc;
 }
 
-private void writeIntevalToTimer(size_t hartId)
+private void writeIntevalToTimer(size_t mhartId)
 {
-    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.timeRegCmpAddr(hartId);
+    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.timeRegCmpAddr(mhartId);
     ulong currTimeValue = *(cast(ulong*) Interrupts.time());
     *mtimeCmpPtr = currTimeValue + interval;
 }
