@@ -19,6 +19,10 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
         const buffPtr = Str.atoa(line, buff);
         println("Panic! ", message, ": ", file, ":", buffPtr);
         //TODO halt
+        import Interrupts = os.core.arch.riscv.interrupts;
+
+        Interrupts.mInterruptsDisable;
+
         while (true)
         {
         }

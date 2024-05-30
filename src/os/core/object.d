@@ -14,8 +14,13 @@ extern (C) void __assert(const(char)* msg, const(char)* file, int line)
 
     char[64] buff = 0;
 
-    println("Assert error: ", sfile, ": ", smsg, ":", Str.atoa(line, buff));
-    while (1)
+    println("Assert error: ", sfile, ":", Str.atoa(line, buff), ": ", smsg, );
+
+    import Interrupts = os.core.arch.riscv.interrupts;
+
+    Interrupts.mInterruptsDisable;
+
+    while (true)
     {
     }
 }
