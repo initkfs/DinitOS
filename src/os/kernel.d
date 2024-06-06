@@ -17,6 +17,8 @@ import MathStrict = os.core.math.math_strict;
 import MathRandom = os.core.math.math_random;
 import Units = os.core.util.units;
 import Bits = os.core.bits;
+import Atomic = os.core.thread.atomic;
+import Spinlock = os.core.thread.sync.spinlock;
 
 version (FeatureFloatPoint)
 {
@@ -36,8 +38,6 @@ __gshared extern (C)
     size_t _heap_start;
     size_t _heap_end;
 }
-
-import Spinlock = os.core.thread.sync.spinlock;
 
 import os.core.io.cstdio;
 import os.core.thread.task;
@@ -72,7 +72,9 @@ private void runTests()
         MathFloat,
         MathRandom,
         Bits,
-        Units
+        Units,
+        Atomic,
+        Spinlock
     );
 
     foreach (m; testModules)
@@ -103,12 +105,6 @@ extern (C) void dstart()
     trapInit;
     Syslog.info("Init traps");
 
-    if (isTimer)
-    {
-        timerInit;
-        Syslog.info("Init timers");
-    }
-
     auto heapStartAddr = cast(void*)(&_heap_start);
     auto heapEndAddr = cast(void*)(&_heap_end - 16);
 
@@ -121,8 +117,12 @@ extern (C) void dstart()
     Allocator.free = &BlockAllocator.free;
 
     runTests;
-    
-    Spinlock.initLock(&lock);
+
+    if (isTimer)
+    {
+        timerInit;
+        Syslog.info("Init timers");
+    }
 
     auto tid = taskCreate(&task0);
     auto tid2 = taskCreate(&task1);

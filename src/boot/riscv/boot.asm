@@ -284,12 +284,37 @@ trap_vector:
 	reg_load t6
 	mret
 
-.globl swap_atomic
-.align(4)
-swap_atomic:
-    li a5, 1
-    amoswap.w.aq a5, a5, 0(a0)
-    mv a0, a5
+.globl swap_acquire
+swap_acquire:
+    li t0, 1
+    lw t1, (a0)                 # Check if lock is held.
+    bnez t1, swap_acquire       # Retry if held.
+    amoswap.w.aq t1, t0, 0(a0)  # Attempt to acquire lock.
+    bnez t1, swap_acquire       # Retry if held.
+    mv a0, t0
+    ret
+.globl swap_release
+swap_release:
+    amoswap.w.rl x0, x0, 0(a0)
+    li a0, 0
+    ret
+
+.globl cas_lrsc
+# TODO check extension
+# a0 address of memory location
+# a1 expected
+# a2 desired
+# a0 return value, 1 if successful, 0 otherwise
+# TODO sequence sequentially
+cas_lrsc:
+    lr.w t0, (a0)          # Load original value.
+    bne t0, a1, cas_lrsc_fail
+    sc.w t0, a2, (a0)      # try update
+    bnez t0, cas_lrsc      # retry if failed
+    li a0, 1               # success
+    ret
+cas_lrsc_fail:
+    li a0, 0
     ret
 
 .globl set_minterrupt_vector_trap

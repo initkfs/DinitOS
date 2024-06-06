@@ -3,30 +3,67 @@
  */
 module os.core.thread.sync.spinlock;
 
+import Externs = os.core.thread.externs;
+
 struct Lock
 {
-    bool locked;
-}
-
-extern (C) int swap_atomic(Lock*);
-
-void initLock(scope Lock* lock) @safe
-{
-    lock.locked = false;
-}
-
-void acquire(Lock* lock)
-{
-    while (true)
+    enum Status
     {
-        if (!swap_atomic(lock))
+        unlock = 0,
+        lock = 1
+    }
+
+    private
+    {
+        int lockStatus = Status.unlock;
+    }
+
+    alias checkIsLocked this;
+
+    protected bool checkIsLocked()
+    {
+        if (isLocked)
         {
-            break;
+            return true;
         }
+        return false;
+    }
+
+    bool isLocked() const pure @safe
+    {
+        return lockStatus == Status.lock;
+    }
+
+    bool isUnlocked() const pure @safe
+    {
+        return lockStatus == Status.unlock;
+    }
+
+    void acquire() @safe
+    {
+        //TODO halt if locked
+        const ret = Externs.swap_acquire(&lockStatus);
+        assert(ret);
+    }
+
+    void release() @safe
+    {
+        const ret = Externs.swap_release(&lockStatus);
+        assert(!ret);
     }
 }
 
-void free(scope Lock* lock) @safe
+unittest
 {
-    initLock(lock);
+    Lock lock;
+    assert(lock.isUnlocked);
+    assert(!lock.isLocked);
+
+    lock.acquire;
+    assert(lock.isLocked);
+    assert(!lock.isUnlocked);
+
+    lock.release;
+    assert(lock.isUnlocked);
+    assert(!lock.isLocked);
 }
