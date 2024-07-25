@@ -112,9 +112,9 @@ extern (C) void dstart()
     Allocator.heapEndAddr = heapEndAddr;
 
     BlockAllocator.initialize(heapStartAddr, heapEndAddr);
-    Allocator.alloc = &BlockAllocator.alloc;
-    Allocator.calloc = &BlockAllocator.calloc;
-    Allocator.free = &BlockAllocator.free;
+    Allocator.allocFunc = &BlockAllocator.alloc;
+    Allocator.callocFunc = &BlockAllocator.calloc;
+    Allocator.freeFunc = &BlockAllocator.free;
 
     runTests;
 

@@ -3,7 +3,11 @@
  */
 module os.core.mem.allocs.allocator;
 
-import os.core.mem.unique_ptr: UniqPtr;
+import os.core.mem.unique_ptr : UniqPtr;
+
+alias AllocFuncType = void* function(size_t sizeBytes) @nogc nothrow @trusted;
+alias CallocFuncType = void* function(size_t capacity, size_t sizeBytes) @nogc nothrow @trusted;
+alias FreeFuncType = bool function(void* ptr) @nogc nothrow @trusted;
 
 private __gshared
 {
@@ -13,44 +17,48 @@ private __gshared
 
 __gshared
 {
-    void* function(size_t num, size_t size) calloc;
-    void* function(size_t num) alloc;
-    bool function(void*) @nogc nothrow free;
+    AllocFuncType allocFunc;
+    CallocFuncType callocFunc;
+    FreeFuncType freeFunc;
 }
 
-UniqPtr!T uptr(T)(size_t capacity = 1)
+UniqPtr!T uptr(T)(size_t capacity = 1) @nogc nothrow @safe
 {
-    assert(alloc);
-    assert(free);
+    assert(allocFunc);
+    assert(freeFunc);
     assert(capacity > 0, "Pointer capacity must be positive number");
 
-    immutable sizeInBytes = capacity * T.sizeof;
-    void* newPtr = alloc(sizeInBytes);
+    import MathStrict = os.core.math.math_strict;
+
+    size_t sizeInBytes;
+    assert(multiplyExact(capacity, T.sizeof, sizeInBytes), "Capacity overflow");
+    assert(sizeInBytes >= T.sizeof);
+    void* newPtr = allocFunc(sizeInBytes);
 
     assert(newPtr, "Allocated pointer is null");
 
-    return UniqPtr!T(cast(T*) newPtr, sizeInBytes, capacity, free);
+    return UniqPtr!T(cast(T*) newPtr, sizeInBytes, capacity, freeFunc);
 }
 
-void heapStartAddr(void* ptr)
+void heapStartAddr(void* ptr) @nogc nothrow
 {
     assert(ptr, "Heap start address must not be null");
     _heapStartAddr = ptr;
 }
 
-void* heapStartAddr()
+void* heapStartAddr() @nogc nothrow
 {
     assert(_heapStartAddr, "Heap start address is null");
     return _heapStartAddr;
 }
 
-void heapEndAddr(void* ptr)
+void heapEndAddr(void* ptr) @nogc nothrow
 {
     assert(ptr, "Heap end address must not be null");
     _heapEndAddr = ptr;
 }
 
-void* heapEndAddr()
+void* heapEndAddr() @nogc nothrow
 {
     assert(_heapEndAddr, "Heap end address is null");
     return _heapEndAddr;

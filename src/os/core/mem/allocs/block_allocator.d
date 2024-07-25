@@ -74,7 +74,7 @@ bool initialize(
     return true;
 }
 
-bool free(void* ptr)
+bool free(void* ptr) @nogc nothrow @trusted
 {
     Block* block = heap.used;
     Block* prev = null;
@@ -104,7 +104,7 @@ bool free(void* ptr)
     return false;
 }
 
-void* alloc(size_t num)
+void* alloc(size_t num) @nogc nothrow @trusted
 {
     Block* block = allocBlock(num);
     if (block)
@@ -114,7 +114,7 @@ void* alloc(size_t num)
     return null;
 }
 
-void* calloc(size_t num, size_t size)
+void* calloc(size_t num, size_t size) @nogc nothrow @trusted
 {
     num *= size;
     Block* block = allocBlock(num);

@@ -3,9 +3,11 @@
  */
 module os.core.mem.unique_ptr;
 
+import os.core.mem.allocs.allocator : FreeFuncType;
+
 import os.core.errors;
 
-struct UniqPtr(T, F = bool function(scope T*) @nogc nothrow @safe)
+struct UniqPtr(T, FreeFunc = FreeFuncType)
 {
     private
     {
@@ -13,27 +15,24 @@ struct UniqPtr(T, F = bool function(scope T*) @nogc nothrow @safe)
         size_t _sizeInBytes;
         size_t _capacity;
         bool _freed;
-        F freeFunPtr;
+        FreeFunc _freeFunPtr;
     }
 
-    bool isCheckBounds;
     bool isAutoFree;
 
-    this(T* t, size_t sizeBytes, size_t capacity, F freeFunPtr = null, bool isAutoFree = true, bool isCheckBounds = true) @nogc nothrow pure @safe
+    this(T* t, size_t sizeBytes, bool isAutoFree = true, FreeFunc freeFunPtr = null) @nogc nothrow pure @safe
     {
         static assert(T.sizeof > 0);
         assert(sizeBytes > 0);
         assert(sizeBytes >= T.sizeof);
-        assert(capacity > 0);
-        assert(sizeBytes >= capacity * T.sizeof);
 
         _ptr = t;
         _sizeInBytes = sizeBytes;
-        _capacity = capacity;
-        
-        this.freeFunPtr = freeFunPtr;
+        _capacity = sizeBytes / T.sizeof;
+        assert(_capacity > 0);
+
+        this._freeFunPtr = freeFunPtr;
         this.isAutoFree = isAutoFree;
-        this.isCheckBounds = isCheckBounds;
     }
 
     alias value this;
@@ -58,93 +57,120 @@ struct UniqPtr(T, F = bool function(scope T*) @nogc nothrow @safe)
     }
 
     void free() @safe
+    in (_ptr)
+    in (_freeFunPtr)
     {
         assert(!_freed, "Memory pointer has already been freed");
-        if (freeFunPtr)
-        {
-            bool isFreed = freeFunPtr(_ptr);
-            assert(isFreed, "Memory pointer not deallocated correctly");
-        }
 
-        release;
+        bool isFreed = _freeFunPtr(_ptr);
+        assert(isFreed, "Memory pointer not deallocated correctly");
+
+        //TODO reset capacity\size
+        _ptr = null;
+        _freed = true;
     }
 
     void release() @safe
+    in (!_freed)
     {
-        _freed = true;
+        _ptr = null;
+        _freed = false;
 
         _sizeInBytes = 0;
         _capacity = 0;
-        _ptr = null;
+        _freeFunPtr = null;
     }
 
-    protected inout(T*) index(size_t i) inout
-    in (!isFreed)
+    protected inout(T*) indexUnsafe(size_t i) inout return @trusted
+    in (_ptr)
+    in (!_freed)
     {
-        if (isCheckBounds)
-        {
-            //TODO
-            assert(i < capacity, "Index is out of bounds");
-        }
+        assert(i < capacity, "Index is out of bounds");
         return &_ptr[i];
     }
 
-    inout(T) opIndex(size_t i) inout
-    in (!isFreed)
+    protected inout(T*) index(size_t i) inout return @safe
+    {
+        return indexUnsafe(i);
+    }
+
+    inout(T) opIndex(size_t i) inout @safe
     {
         return *(index(i));
     }
 
-    inout(T) value() inout
-    in (!isFreed)
+    inout(T) value() inout @safe
     {
         return opIndex(0);
     }
 
-    void value(T newValue)
-    in (!isFreed)
+    void value(T newValue) @safe
     {
         *index(0) = newValue;
     }
 
-    inout(T*) get() inout return @safe
-    in (!isFreed)
+    inout(T*) ptr() inout return @safe
+    in (_ptr)
+    in (!_freed)
+    {
+        return _ptr;
+    }
+
+    inout(T*) ptrUnsafe() inout
+    in (_ptr)
+    in (!_freed)
     {
         return _ptr;
     }
 
     // a[i] = v
-    void opIndexAssign(T value, size_t i)
-    in (!isFreed)
+    void opIndexAssign(T value, size_t i) @safe
     {
         *(index(i)) = value;
     }
 
     // a[i1, i2] = v
-    void opIndexAssign(T value, size_t i1, size_t i2)
-    in (!isFreed)
+    void opIndexAssign(T value, size_t i1, size_t i2) @safe
     {
 
         opSlice(i1, i2)[] = value;
     }
 
-    void opIndexAssign(T[] value, size_t i1, size_t i2)
-    in (!isFreed)
+    void opIndexAssign(T[] value, size_t i1, size_t i2) @safe
     {
         opSlice(i1, i2)[] = value;
     }
 
-    inout(T[]) opSlice(size_t i, size_t j) inout
-    in (!isFreed)
+    inout(T[]) opSlice(size_t i, size_t j) @trusted inout
+    in (_ptr)
+    in (!_freed)
     {
         assert(i < j);
         assert(j <= capacity);
         return _ptr[i .. j];
     }
 
-    private void opAssign(UniqPtr);
+    void opAssign(T newVal) @safe
+    {
+        value(newVal);
+    }
 
-    size_t size() const @safe
+    void opAssign(UniqPtr!T newPtr) @safe
+    {
+        if (_ptr)
+        {
+            free;
+        }
+
+        _freed = false;
+
+        _ptr = newPtr.ptrUnsafe;
+        assert(_ptr);
+
+        _freeFunPtr = newPtr.freeFunPtr;
+    }
+
+    size_t sizeBytes() const @safe
     {
         return _sizeInBytes;
     }
@@ -154,7 +180,13 @@ struct UniqPtr(T, F = bool function(scope T*) @nogc nothrow @safe)
         return _capacity;
     }
 
-    auto range() return @safe
+    FreeFunc freeFunPtr() const @safe
+    in (_freeFunPtr)
+    {
+        return _freeFunPtr;
+    }
+
+    auto range() return scope @safe
     {
         static struct PtrRange
         {
@@ -194,21 +226,23 @@ struct UniqPtr(T, F = bool function(scope T*) @nogc nothrow @safe)
 unittest
 {
     int value = 45;
-    auto ptr = UniqPtr!(int)(&value, value.sizeof, 1, null, false, true);
+    auto ptr = UniqPtr!(int)(&value, value.sizeof, isAutoFree:
+        false);
 
     assert(!ptr.isFreed, "Pointer freed");
-    assert(ptr.size == value.sizeof, "Pointer invalid size");
+    assert(ptr.sizeBytes == value.sizeof, "Pointer invalid size");
 
     assert(ptr.value == value, "Pointer value incorrect");
     assert(ptr[0] == value, "Pointer first index incorrect");
-    assert(ptr.get == &value, "Invalid raw pointer");
+    assert(ptr.ptr == &value, "Invalid raw pointer");
 
     enum newValue = 2324;
     ptr.value = newValue;
     assert(ptr.value == newValue, "Pointer invalid new value");
 
     int[2] arr = [54, 65];
-    auto ptr2 = UniqPtr!(int)(arr.ptr, arr.sizeof, 2, null, false, true);
+    auto ptr2 = UniqPtr!(int)(arr.ptr, arr.sizeof, isAutoFree:
+        false);
 
     auto ptr2Slice = ptr2[0 .. 2];
     assert(ptr2Slice == arr);
