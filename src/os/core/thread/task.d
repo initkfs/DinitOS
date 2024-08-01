@@ -10,14 +10,16 @@ import Syslog = os.core.log.syslog;
 enum taskMaxCount = 16;
 enum taskStacksSize = 1024;
 
-__gshared ubyte[taskStacksSize][taskMaxCount] taskStacks;
-__gshared RegContext[taskMaxCount] tasks;
+__gshared
+{
+    ubyte[taskStacksSize][taskMaxCount] taskStacks;
+    RegContext[taskMaxCount] tasks;
 
-__gshared RegContext contextOs;
-__gshared RegContext* contextCurrent;
+    RegContext contextOs;
+    RegContext* contextCurrent;
 
-__gshared size_t taskCount;
-__gshared size_t currentTaskIndex;
+    size_t taskCount;
+}
 
 alias reg_t = size_t;
 
@@ -48,36 +50,20 @@ size_t taskCreate(void function() t)
     tasks[i].sp = cast(reg_t)&taskStacks[i][taskStacksSize - 1];
     taskCount++;
 
-    // if(!contextCurrent){
-    //     contextCurrent = &tasks[i];
-    // }
-
     return i;
 }
 
-void switchContextToTask(size_t i)
+void switchOsToTask(size_t i)
 {
     contextCurrent = &tasks[i];
     context_switch(&contextOs, contextCurrent);
 }
 
-void switchTasks()
+void switchTaskToOs()
 {
-    if (currentTaskIndex >= taskCount)
-    {
-        currentTaskIndex = 0;
-    }
-
-    Syslog.trace("Switch tasks");
-
     auto oldTask = contextCurrent;
-    auto newTask = &tasks[currentTaskIndex];
-
-    contextCurrent = newTask;    
-
-    currentTaskIndex++;
-
-    context_switch(oldTask, newTask);
+    contextCurrent = &contextOs;
+    context_switch(oldTask, contextCurrent);
 }
 
 private

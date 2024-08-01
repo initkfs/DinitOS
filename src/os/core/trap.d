@@ -55,7 +55,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause)
                 Interrupts.mInterruptIsEnable(
                     ~((~Interrupts.mInterruptIsEnable) | Interrupts.MIE_MTIE));
                 timer_handler(epc, cause);
-                retPc = cast(size_t)&switchTasks;
+                retPc = cast(size_t)&switchTaskToOs;
                 // enable timer interrupts.
                 Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
                 break;

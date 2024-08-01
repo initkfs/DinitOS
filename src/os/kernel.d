@@ -125,8 +125,17 @@ extern (C) void dstart()
     }
 
     auto tid = taskCreate(&task0);
-    auto tid2 = taskCreate(&task1);
-    switchContextToTask(tid);
+    auto tid1 = taskCreate(&task1);
+    auto tid2 = taskCreate(&task2);
+
+    size_t taskIndex;
+    while (true)
+	{
+		Syslog.trace("Switch tasks");
+		switchOsToTask(taskIndex);
+		Syslog.trace("Switch to OS");
+		taskIndex = (taskIndex + 1) % taskCount;
+	}
 }
 
 void task0()
@@ -152,6 +161,16 @@ void task1()
     while (true)
     {
         Syslog.trace("LED2 ON");
+        delayTicks;
+    }
+}
+
+void task2()
+{
+    Syslog.trace("Enable LED3.");
+    while (true)
+    {
+        Syslog.trace("LED3 ON");
         delayTicks;
     }
 }
