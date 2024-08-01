@@ -8,18 +8,7 @@ import os.core.io.cstdio;
 import Syslog = os.core.log.syslog;
 
 enum taskMaxCount = 16;
-enum taskStacksSize = 1024;
-
-__gshared
-{
-    ubyte[taskStacksSize][taskMaxCount] taskStacks;
-    RegContext[taskMaxCount] tasks;
-
-    RegContext contextOs;
-    RegContext* contextCurrent;
-
-    size_t taskCount;
-}
+enum taskStacksSize = 2048;
 
 alias reg_t = size_t;
 
@@ -43,11 +32,39 @@ align(1):
     reg_t s11;
 }
 
+enum TaskState {
+    none,
+    created,
+    running,
+    sleep
+}
+
+struct Task
+{
+    TaskState state;
+    RegContext context;
+}
+
+__gshared
+{
+    ubyte[taskStacksSize][taskMaxCount] taskStacks;
+    Task[taskMaxCount] tasks;
+
+    Task osTask;
+    Task* currentTask;
+
+    size_t taskCount;
+}
+
 size_t taskCreate(void function() t)
 {
     auto i = taskCount;
-    tasks[i].ra = cast(reg_t) t;
-    tasks[i].sp = cast(reg_t)&taskStacks[i][taskStacksSize - 1];
+    Task* taskPtr = &tasks[i];
+    assert(taskPtr.state == TaskState.none);
+    taskPtr.state = TaskState.created;
+    taskPtr.context.ra = cast(reg_t) t;
+    taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 1]);
+    
     taskCount++;
 
     return i;
@@ -55,15 +72,24 @@ size_t taskCreate(void function() t)
 
 void switchOsToTask(size_t i)
 {
-    contextCurrent = &tasks[i];
-    context_switch(&contextOs, contextCurrent);
+    currentTask = &tasks[i];
+    assert(currentTask.state != TaskState.running);
+    currentTask.state = TaskState.running;
+    osTask.state = TaskState.sleep;
+    context_switch(&(osTask.context), &(currentTask.context));
 }
 
 void switchTaskToOs()
 {
-    auto oldTask = contextCurrent;
-    contextCurrent = &contextOs;
-    context_switch(oldTask, contextCurrent);
+    auto oldTask = currentTask;
+    assert(oldTask.state == TaskState.running);
+    oldTask.state = TaskState.sleep;
+   
+    currentTask = &osTask;
+    assert(currentTask.state == TaskState.sleep);
+    currentTask.state = TaskState.running;
+    
+    context_switch(&(oldTask.context), &(currentTask.context));
 }
 
 private
