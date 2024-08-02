@@ -24,7 +24,7 @@ protected
         Ns16650a.writeTx(b);
     }
 
-    void logWrite(string s)
+    void logWrite(const(char)[] s)
     {
         foreach (ch; s)
         {
@@ -48,7 +48,7 @@ void setLogLevel(LogLevel level = LogLevel.all) @nogc nothrow
     logLevel = level;
 }
 
-string getLogLevelName() @nogc nothrow
+const(char)[] getLogLevelName() @nogc nothrow
 {
     return getLevelName(logLevel);
 }
@@ -78,7 +78,7 @@ bool isForSyslogLevel(LogLevel level) @nogc nothrow
     return isForLogLevel(level, logLevel);
 }
 
-private void log(LogLevel level, string message, string file, int line)
+private void log(LogLevel level, const(char)[] message, const(char)[] file, int line)
 {
     if (level == LogLevel.error && !Inspector.isErrors)
     {
@@ -104,8 +104,8 @@ private void log(LogLevel level, string message, string file, int line)
     //TODO line;
 }
 
-private void logf(T)(LogLevel level, string pattern, T[] args,
-    string file, int line)
+private void logf(T)(LogLevel level, const(char)[] pattern, T[] args,
+    const(char)[] file, int line)
 {
     if (!isForLogLevel(level, logLevel))
     {
@@ -116,62 +116,62 @@ private void logf(T)(LogLevel level, string pattern, T[] args,
     log(level, pattern, file, line);
 }
 
-void tracef(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void tracef(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.trace, pattern, args, file, line);
 }
 
-void trace(string message, const string file = __FILE__, const int line = __LINE__)
+void trace(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.trace, message, file, line);
 }
 
-// void trace(char* message, const string file = __FILE__, const int line = __LINE__)
+// void trace(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
 // {
-//     trace(Strings.toString(message), file, line);
+//     trace(const(char)[]s.toconst(char)[](message), file, line);
 // }
 
-void infof(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void infof(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.info, pattern, args, file, line);
 }
 
-void info(string message, const string file = __FILE__, const int line = __LINE__)
+void info(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.info, message, file, line);
 }
 
-// void info(char* message, const string file = __FILE__, const int line = __LINE__)
+// void info(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
 // {
-//     info(Strings.toString(message), file, line);
+//     info(const(char)[]s.toconst(char)[](message), file, line);
 // }
 
-void warnf(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void warnf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.warn, pattern, args, file, line);
 }
 
-void warn(string message, const string file = __FILE__, const int line = __LINE__)
+void warn(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.warn, message, file, line);
 }
 
-// void warn(char* message, const string file = __FILE__, const int line = __LINE__)
+// void warn(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
 // {
-//     warn(Strings.toString(message), file, line);
+//     warn(const(char)[]s.toconst(char)[](message), file, line);
 // }
 
-void errorf(T)(string pattern, T[] args, const string file = __FILE__, const int line = __LINE__)
+void errorf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.error, pattern, args, file, line);
 }
 
-void error(string message, const string file = __FILE__, const int line = __LINE__)
+void error(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     log(LogLevel.error, message, file, line);
 }
 
-// void error(char* message, const string file = __FILE__, const int line = __LINE__)
+// void error(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
 // {
-//     error(Strings.toString(message), file, line);
+//     error(const(char)[]s.toconst(char)[](message), file, line);
 // }

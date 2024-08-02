@@ -328,3 +328,23 @@ set_minterrupt_vector_timer:
     la a0, system_timer
     csrw mtvec, a0
     ret
+
+.globl get_bss_start
+get_bss_start:
+    la a0, _bss_start
+    ret
+
+.globl get_bss_end
+get_bss_end:
+    la a0, _bss_end
+    ret
+
+.globl get_heap_start
+get_heap_start:
+    la a0, _heap_start
+    ret
+
+.globl get_heap_end
+get_heap_end:
+    la a0, _heap_end
+    ret

@@ -30,13 +30,11 @@ else
     import MathFloat = os.core.math.math_core;
 }
 
-__gshared extern (C)
-{
-    size_t _bss_start;
-    size_t _bss_end;
-
-    size_t _heap_start;
-    size_t _heap_end;
+extern(C){
+    size_t get_bss_start();
+    size_t get_bss_end();
+    size_t get_heap_start();
+    size_t get_heap_end();
 }
 
 import os.core.io.cstdio;
@@ -90,23 +88,24 @@ private void runTests()
 
 extern (C) void dstart()
 {
-    auto bss = cast(ubyte*)&_bss_start;
-    auto bss_end = cast(ubyte*)&_bss_end;
-    while (bss < bss_end)
+    Syslog.setLoad(true);
+
+    ubyte* bssStart = cast(ubyte*) get_bss_start;
+    ubyte* bssEnd = cast(ubyte*) get_bss_end;
+
+    while (bssStart < bssEnd)
     {
         //TODO volatile
-        *bss++ = 0;
+        *bssStart++ = 0;
     }
-
-    Syslog.setLoad(true);
 
     Syslog.info("Os start");
 
     trapInit;
     Syslog.info("Init traps");
 
-    auto heapStartAddr = cast(void*)(&_heap_start);
-    auto heapEndAddr = cast(void*)(&_heap_end - 16);
+    auto heapStartAddr = cast(void*)(get_heap_start);
+    auto heapEndAddr = cast(void*)(get_heap_end);
 
     Allocator.heapStartAddr = heapStartAddr;
     Allocator.heapEndAddr = heapEndAddr;
@@ -130,12 +129,12 @@ extern (C) void dstart()
 
     size_t taskIndex;
     while (true)
-	{
-		Syslog.trace("Switch tasks");
-		switchOsToTask(taskIndex);
-		Syslog.trace("Switch to OS");
-		taskIndex = (taskIndex + 1) % taskCount;
-	}
+    {
+        Syslog.trace("Switch tasks");
+        switchOsToTask(taskIndex);
+        Syslog.trace("Switch to OS");
+        taskIndex = (taskIndex + 1) % taskCount;
+    }
 }
 
 void task0()

@@ -171,10 +171,16 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
     immutable C[16] alphabet = "0123456789ABCDEF";
 
     auto value = targetValue;
-    immutable isNeg = value < 0;
-    if (isNeg)
+
+    import std.traits : isUnsigned;
+
+    static if (!isUnsigned!T)
     {
-        value = -value;
+        immutable isNeg = value < 0;
+        if (isNeg)
+        {
+            value = -value;
+        }
     }
 
     size_t index = buff.length - 1;
@@ -185,14 +191,22 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
         --index;
     }
 
-    if (isNeg)
-    {
-        buff[index] = '-';
-    }
-    else
+    static if (isUnsigned!T)
     {
         index++;
     }
+    else
+    {
+        if (isNeg)
+        {
+            buff[index] = '-';
+        }
+        else
+        {
+            index++;
+        }
+    }
+
     //TODO it would be useful to reset the buffer in case of insufficient capacity
     return buff[index .. $];
 }
@@ -469,7 +483,7 @@ C[] ftoa(T, C = char)(
         return buff[0 .. 1];
     }
 
-    import std.traits: Unqual;
+    import std.traits : Unqual;
 
     Unqual!T n = targetValue;
     int digit, magn, magn1;
