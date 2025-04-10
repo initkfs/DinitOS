@@ -5,7 +5,7 @@
     "copyright": "Copyright © 2023, initkfs",
     "description": "Simple toy operating system.",
     "license": "",
-    "name": "kassios",
+    "name": "dinitos",
     "configurations": [
         {
             "name": "riscv32",
@@ -16,6 +16,7 @@
                 "FeatureFloatPoint"
             ],
             "dflags-ldc": [
+                "-mattr=+m,+a,+c,+f",
                 "-mtriple=riscv32-unknown-elf",
                 "--unittest",
                 "--mabi=ilp32f"
@@ -29,9 +30,13 @@
                 "FeatureFloatPoint"
             ],
             "dflags-ldc": [
+                "-mattr=+m,+a,+c,+f",
                 "-mtriple=riscv32-unknown-elf",
                 "-Oz",
-                "--mabi=ilp32f"
+                "--mabi=ilp32f",
+                "-L-Wl,--gc-sections",
+                "--function-sections",
+                "--data-sections"
             ]
         },
         {
@@ -68,14 +73,13 @@
     ],
     "dflags-ldc": [
         "-betterC",
-        "-mattr=+m,+a,+c,+f",
-        "--code-model=medium",
+        "-dip1000",
+        "-preview=in",
         "--nodefaultlib",
-        "--function-sections",
-        "--data-sections",
-        "--relocation-model=static",
-        "-dip1000", 
-        "-preview=in"
+        "--fno-delete-null-pointer-checks",
+        "--fno-plt",
+        "--code-model=medium",
+        "--relocation-model=static"
     ],
     "targetType": "library",
     "targetName": "kernel",

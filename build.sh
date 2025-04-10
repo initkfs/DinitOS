@@ -123,6 +123,8 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+riscv64-unknown-elf-size "$kernelElf"
+
 riscv64-unknown-elf-objcopy  -O binary "$kernelElf" "$kernelBin"
 if [[ $? -ne 0 ]]; then
     echo "Kernel object file translation error" >&2
