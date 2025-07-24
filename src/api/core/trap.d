@@ -3,7 +3,14 @@
  */
 module api.core.trap;
 
-import Interrupts = api.core.arch.riscv.interrupts;
+version (RiscvGeneric)
+{
+   import Interrupts = api.arch.riscv.hal.interrupts;
+}
+else
+{
+    static assert(false, "Not supported platform");
+}
 
 import api.core.io.cstdio;
 import api.core.thread.task;

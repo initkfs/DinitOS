@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module api.core.arch.riscv.harts;
+module api.arch.riscv.hal.harts;
 
-import Externs = api.core.arch.riscv.externs;
+import Externs = api.arch.riscv.hal.externs;
 
 size_t mhartId() @trusted
 {

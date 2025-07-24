@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.core.arch.riscv.externs;
+module api.arch.riscv.hal.externs;
 
 extern (C) @trusted:
 

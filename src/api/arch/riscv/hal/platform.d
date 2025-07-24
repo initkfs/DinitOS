@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.core.arch.riscv.platform;
+module api.arch.riscv.hal.platform;
 
 version (Qemu)
 {

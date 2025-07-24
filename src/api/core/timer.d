@@ -5,15 +5,24 @@ module api.core.timer;
 
 import api.core.io.cstdio;
 
-import Harts = api.core.arch.riscv.harts;
-import Interrupts = api.core.arch.riscv.interrupts;
+version (RiscvGeneric)
+{
+    import Harts = api.arch.riscv.hal.harts;
+    import Interrupts = api.arch.riscv.hal.interrupts;
+}
+else
+{
+    static assert(false, "Not supported platform");
+}
+
 import Syslog = api.core.log.syslog;
 
 enum interval = 20000000;
 __gshared TimerScratch[Interrupts.numCores] timerMscratchs;
 
-struct TimerScratch {
-    align(1):
+struct TimerScratch
+{
+align(1):
     //timervec
     size_t[3] saveRegisters;
     size_t clintCmpRegister;
@@ -35,7 +44,7 @@ void timerInit()
     Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
 }
 
-extern(C) size_t timer_handler(size_t epc, size_t cause)
+extern (C) size_t timer_handler(size_t epc, size_t cause)
 {
     Interrupts.mInterruptsDisable;
 

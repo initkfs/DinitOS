@@ -1,10 +1,10 @@
 /**
  * Authors: initkfs
  */
-module api.core.arch.riscv.interrupts;
+module api.arch.riscv.hal.interrupts;
 
-import Externs = api.core.arch.riscv.externs;
-import Platform = api.core.arch.riscv.platform;
+import Externs = api.arch.riscv.hal.externs;
+import Platform = api.arch.riscv.hal.platform;
 
 enum clintBase = Platform.clintBase;
 enum clintCompareRegHurtOffset = Platform.clintCompareRegHurtOffset;

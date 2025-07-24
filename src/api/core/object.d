@@ -14,15 +14,11 @@ extern (C) void __assert(const(char)* msg, const(char)* file, int line)
 
     char[64] buff = 0;
 
-    println("Assert error: ", sfile, ":", Str.atoa(line, buff), ": ", smsg, );
+    println("Assert error: ", sfile, ":", Str.atoa(line, buff), ": ", smsg,);
 
-    import Interrupts = api.core.arch.riscv.interrupts;
+    import api.core.errors : halt;
 
-    Interrupts.mInterruptsDisable;
-
-    while (true)
-    {
-    }
+    halt;
 }
 
 extern (C) void _d_array_slice_copy(void* dst, size_t dstlen, void* src, size_t srclen, size_t elemsz)
