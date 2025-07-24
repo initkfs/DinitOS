@@ -110,28 +110,52 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-riscv64-unknown-elf-as -march=$assemblyMarchType -mabi=$mabi  --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
+riscvElfAs=
+riscvElfLd=
+riscvElfSize=
+riscvElfObjcopy=
+riscvElfObjdump=
+
+if [[ $archType == "r32" ]]; then
+     echo "Set toolchain for r32"
+     riscvElfAs=riscv32-unknown-elf-as
+     riscvElfLd=riscv32-unknown-elf-ld
+     riscvElfSize=riscv32-unknown-elf-size
+     riscvElfObjcopy=riscv32-unknown-elf-objcopy
+     riscvElfObjdump=riscv32-unknown-elf-objcopy
+elif [[ $archType == "r64" ]]; then
+     riscvElfAs=riscv64-unknown-elf-as
+     riscvElfLd=riscv64-unknown-elf-ld
+     riscvElfSize=riscv64-unknown-elf-size
+     riscvElfObjcopy=riscv64-unknown-elf-objcopy
+     riscvElfObjdump=riscv64-unknown-elf-objcopy
+else 
+    echo "Unsupported arch type: $archType" >&2
+    exit 1
+fi
+
+"$riscvElfAs" -march=$assemblyMarchType -mabi=$mabi  --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
 if [[ $? -ne 0 ]]; then
     echo "Boot build error" >&2
     exit 1
 fi
 
 #https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
-riscv64-unknown-elf-ld --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/link/riscv/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
+"$riscvElfLd" --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/link/riscv/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2
     exit 1
 fi
 
-riscv64-unknown-elf-size "$kernelElf"
+"$riscvElfSize" "$kernelElf"
 
-riscv64-unknown-elf-objcopy  -O binary "$kernelElf" "$kernelBin"
+"$riscvElfObjcopy" -O binary "$kernelElf" "$kernelBin"
 if [[ $? -ne 0 ]]; then
     echo "Kernel object file translation error" >&2
     exit 1
 fi
 
-riscv64-unknown-elf-objdump -D "$kernelElf"  > kernel.list
+"$riscvElfObjdump" -D "$kernelElf"  > kernel.list
 
 if [[ -z $emulator ]]; then
     echo "Not found emulator" >&2

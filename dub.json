@@ -16,11 +16,12 @@
                 "FeatureFloatPoint"
             ],
             "dflags-ldc": [
-                "-mattr=+m,+a,+c,+f",
-                "-mtriple=riscv32-unknown-elf",
+                "--mtriple=riscv32-unknown-elf",
                 "--unittest",
+                "--mattr=+m,+a,+c,+f",
                 "--mabi=ilp32f"
-            ]
+            ],
+            "buildRequirements": ["allowWarnings"]
         },
         {
             "name": "riscv32-release",
@@ -49,7 +50,7 @@
                 "PTS64"
             ],
             "dflags-ldc": [
-                "-mtriple=riscv64-unknown-elf",
+                "-mtriple=riscv64-unknown-none",
                 "--unittest",
                 "-mattr=+m,+a,+c,+f,+d",
                 "--mabi=lp64d"
@@ -75,7 +76,10 @@
         "-betterC",
         "-dip1000",
         "-preview=in",
+        "--disable-simplify-drtcalls",
+        "--disable-simplify-libcalls",
         "--nodefaultlib",
+        "--fvisibility=hidden",
         "--fno-delete-null-pointer-checks",
         "--fno-plt",
         "--code-model=medium",
