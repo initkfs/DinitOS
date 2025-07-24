@@ -9,6 +9,7 @@ import Platform = api.arch.riscv.hal.platform;
 enum clintBase = Platform.clintBase;
 enum clintCompareRegHurtOffset = Platform.clintCompareRegHurtOffset;
 enum clintTimerRegOffset = Platform.clintTimerRegOffset;
+enum clintMtimecmpSize = Platform.clintMtimecmpSize;
 enum numCores = Platform.numCores;
 
 enum MSTATUS_MPP_MASK = (3 << 11);
@@ -26,7 +27,7 @@ enum MIE_MSIE = (1 << 3);
 
 ulong mTimeRegCmpAddr(size_t hartid) @trusted
 {
-    return clintBase + clintCompareRegHurtOffset + numCores * hartid;
+    return clintBase + clintCompareRegHurtOffset + clintMtimecmpSize * hartid;
 }
 
 ulong mTime() @trusted

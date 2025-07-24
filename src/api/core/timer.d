@@ -17,7 +17,12 @@ else
 
 import Syslog = api.core.log.syslog;
 
-enum interval = 20000000;
+__gshared size_t interval;
+
+//Round-Robin. 1-10ms
+//RTOS. 100 mcs - 1 ms
+enum startIntervalSec = 5;
+
 __gshared TimerScratch[Interrupts.numCores] timerMscratchs;
 
 struct TimerScratch
@@ -29,9 +34,16 @@ align(1):
     size_t interval;
 }
 
+size_t ticksFromSec(size_t sec, size_t freqHz) => sec * freqHz;
+
 void timerInit()
 {
     size_t id = Harts.mhartId();
+
+    import Platform = api.arch.riscv.hal.platform;
+
+    interval = ticksFromSec(startIntervalSec, Platform.mTimerHz);
+    assert(interval > 0);
 
     writeIntevalToTimer(id);
 
@@ -42,6 +54,18 @@ void timerInit()
     Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
     Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
+
+    // uint64_t read_mtime()
+    // {
+    //     uint32_t lo, hi;
+    //     do
+    //     {
+    //         hi = read_reg(MTIME_HI);
+    //         lo = read_reg(MTIME_LO);
+    //     }
+    //     while (hi != read_reg(MTIME_HI));
+    //     return ((uint64_t) hi << 32) | lo;
+    // }
 }
 
 extern (C) size_t timer_handler(size_t epc, size_t cause)
@@ -60,7 +84,10 @@ extern (C) size_t timer_handler(size_t epc, size_t cause)
 
 private void writeIntevalToTimer(size_t mhartId)
 {
+    import Volatile = api.core.volatile;
+
     ulong* mtimeCmpPtr = cast(ulong*) Interrupts.mTimeRegCmpAddr(mhartId);
     ulong currTimeValue = *(cast(ulong*) Interrupts.mTime());
-    *mtimeCmpPtr = currTimeValue + interval;
+    Volatile.save(mtimeCmpPtr, currTimeValue + interval);
+    //*mtimeCmpPtr = currTimeValue + interval;
 }
