@@ -63,3 +63,19 @@ bool memeqs(T)(const(T)[] s1, const(T)[] s2)
 
     return true;
 }
+
+import ldc.llvmasm;
+
+void memoryFenceRWRW()
+{
+    __asm(
+        "fence rw, rw", "~{memory}"
+    );
+}
+
+void memoryFenceWW()
+{
+    __asm(
+        "fence w, w", "~{memory}"
+    );
+}

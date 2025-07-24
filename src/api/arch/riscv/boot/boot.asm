@@ -298,6 +298,7 @@ swap_release:
     amoswap.w.rl x0, x0, 0(a0)
     li a0, 0
     ret
+#sw zero, (a0)
 
 .globl cas_lrsc
 # TODO check extension
@@ -307,10 +308,30 @@ swap_release:
 # a0 return value, 1 if successful, 0 otherwise
 # TODO sequence sequentially
 cas_lrsc:
+    .ifdef rvSMP
+    fence rw, rw
+    .endif
+
+    .ifdef rv32
     lr.w t0, (a0)          # Load original value.
+    .elseif rv64
+    lr.d t0, (a0)
+    .endif  
+
     bne t0, a1, cas_lrsc_fail
+    
+    .ifdef rv32
     sc.w t0, a2, (a0)      # try update
+    .elseif rv64
+    sc.d t0, a2, (a0)
+    .endif 
+    
     bnez t0, cas_lrsc      # retry if failed
+    
+    .ifdef rvSMP
+    fence rw, rw
+    .endif
+
     li a0, 1               # success
     ret
 cas_lrsc_fail:

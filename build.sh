@@ -122,13 +122,13 @@ if [[ $archType == "r32" ]]; then
      riscvElfLd=riscv32-unknown-elf-ld
      riscvElfSize=riscv32-unknown-elf-size
      riscvElfObjcopy=riscv32-unknown-elf-objcopy
-     riscvElfObjdump=riscv32-unknown-elf-objcopy
+     riscvElfObjdump=riscv32-unknown-elf-objdump
 elif [[ $archType == "r64" ]]; then
      riscvElfAs=riscv64-unknown-elf-as
      riscvElfLd=riscv64-unknown-elf-ld
      riscvElfSize=riscv64-unknown-elf-size
      riscvElfObjcopy=riscv64-unknown-elf-objcopy
-     riscvElfObjdump=riscv64-unknown-elf-objcopy
+     riscvElfObjdump=riscv64-unknown-elf-objdump
 else 
     echo "Unsupported arch type: $archType" >&2
     exit 1
