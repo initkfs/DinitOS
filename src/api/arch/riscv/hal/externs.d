@@ -5,6 +5,11 @@ module api.arch.riscv.hal.externs;
 
 extern (C) @trusted:
 
+size_t m_get_misa();
+int m_get_mvendorid();
+size_t m_get_marchid();
+size_t m_get_mimpid();
+
 void set_minterrupt_vector_timer();
 size_t m_get_hart_id();
 size_t m_get_status();

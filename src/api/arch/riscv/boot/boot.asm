@@ -216,6 +216,27 @@ _hlt:
 .endif  
 .endm
 
+.globl m_get_misa
+m_get_misa:
+csrr a0, misa
+ret
+
+.globl m_get_mvendorid
+m_get_mvendorid:
+csrr a0, mvendorid
+ret
+
+.globl m_get_marchid
+m_get_marchid:
+csrr a0, marchid
+ret
+
+.globl m_get_mimpid
+m_get_mimpid:
+# Machine Implementation ID (mimpid) Register
+csrr a0, mimpid
+ret
+
 .globl m_get_hart_id
 m_get_hart_id:
 csrr a0, mhartid
