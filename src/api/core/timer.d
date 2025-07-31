@@ -80,7 +80,7 @@ extern (C) size_t timer_handler(size_t epc, size_t cause)
     auto id = Harts.mhartId();
     writeIntevalToTimer(id);
 
-    Interrupts.mGlobalInterruptDisable;
+    Interrupts.mInterruptsEnable;
 
     Syslog.trace("Call timer handler");
 

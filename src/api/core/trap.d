@@ -27,7 +27,7 @@ void trapInit()
     Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
 }
 
-extern (C) size_t trap_handler(size_t epc, size_t cause)
+extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
 {
     auto retPc = epc;
 

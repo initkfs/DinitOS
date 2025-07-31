@@ -13,6 +13,7 @@ PHDRS
     rodata PT_LOAD;
     data PT_LOAD;
     bss PT_LOAD;
+    isrstack PT_LOAD;
     kstack PT_LOAD;
 }
 
@@ -42,6 +43,13 @@ SECTIONS
     *(.sbss .sbss.*) *(.bss .bss.*)
     _bss_end = .;
     } >ram AT>ram :bss
+
+   .isrstack : {
+     . = ALIGN(8);
+      _interrupt_stack_top = .;
+      . += 2048;
+     _interrupt_stack_end = .;
+    }  >ram AT>ram :isrstack
   
   .kstack : {
     . = ALIGN(16);

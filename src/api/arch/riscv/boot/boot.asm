@@ -12,6 +12,14 @@ _hlt:
     wfi
     j _hlt
 
+# .macro reg_save base
+# .set offset, 0
+# .rept 32
+#     sd x\offset, (\base + offset * 8)(x0)
+#     .set offset, offset + 1
+# .endr
+# .endm
+
 .macro context_save base
 .ifdef rv32
     sw ra, 0(\base)
@@ -80,42 +88,83 @@ _hlt:
 .endif
 .endm
 
+.macro fpu_save_32 base
+    fsw f0,  0(\base)
+    fsw f1,  4(\base)
+    fsw f2,  8(\base)
+    fsw f3,  12(\base)
+    fsw f4,  16(\base)
+    fsw f5,  20(\base)
+    fsw f6,  24(\base)
+    fsw f7,  28(\base)
+    fsw f8,  32(\base)
+    fsw f9,  36(\base)
+    fsw f10, 40(\base)
+    fsw f11, 44(\base)
+    fsw f12, 48(\base)
+    fsw f13, 52(\base)
+    fsw f14, 56(\base)
+    fsw f15, 60(\base)
+    fsw f16, 64(\base)
+    fsw f17, 68(\base)
+    fsw f18, 72(\base)
+    fsw f19, 76(\base)
+    fsw f20, 80(\base)
+    fsw f21, 84(\base)
+    fsw f22, 88(\base)
+    fsw f23, 92(\base)
+    fsw f24, 96(\base)
+    fsw f25, 100(\base)
+    fsw f26, 104(\base)
+    fsw f27, 108(\base)
+    fsw f28, 112(\base)
+    fsw f29, 116(\base)
+    fsw f30, 120(\base)
+    fsw f31, 124(\base)
+.endm
+
+.macro fpu_save_64 base
+    fsd f0,  0(\base)
+    fsd f1,  8(\base)
+    fsd f2,  16(\base)
+    fsd f3,  24(\base)
+    fsd f4,  32(\base)
+    fsd f5,  40(\base)
+    fsd f6,  48(\base)
+    fsd f7,  56(\base)
+    fsd f8,  64(\base)
+    fsd f9,  72(\base)
+    fsd f10, 80(\base)
+    fsd f11, 88(\base)
+    fsd f12, 96(\base)
+    fsd f13, 104(\base)
+    fsd f14, 112(\base)
+    fsd f15, 120(\base)
+    fsd f16, 128(\base)
+    fsd f17, 136(\base)
+    fsd f18, 144(\base)
+    fsd f19, 152(\base)
+    fsd f20, 160(\base)
+    fsd f21, 168(\base)
+    fsd f22, 176(\base)
+    fsd f23, 184(\base)
+    fsd f24, 192(\base)
+    fsd f25, 200(\base)
+    fsd f26, 208(\base)
+    fsd f27, 216(\base)
+    fsd f28, 224(\base)
+    fsd f29, 232(\base)
+    fsd f30, 240(\base)
+    fsd f31, 248(\base)
+.endm
+
 .macro reg_save base
 .ifdef rv32
-    mv t0, sp
-    sw t0, 4(\base)
-
-    sw ra, 0(\base)
-    sw sp, 4(\base)
-    sw gp, 8(\base)
-    sw tp, 12(\base)
-    sw t0, 16(\base)
-    sw t1, 20(\base)
-    sw t2, 24(\base)
-    sw s0, 28(\base)
-    sw s1, 32(\base)
-    sw a0, 36(\base)
-    sw a1, 40(\base)
-    sw a2, 44(\base)
-    sw a3, 48(\base)
-    sw a4, 52(\base)
-    sw a5, 56(\base)
-    sw a6, 60(\base)
-    sw a7, 64(\base)
-    sw s2, 68(\base)
-    sw s3, 72(\base)
-    sw s4, 76(\base)
-    sw s5, 80(\base)
-    sw s6, 84(\base)
-    sw s7, 88(\base)
-    sw s8, 92(\base)
-    sw s9, 96(\base)
-    sw s10, 100(\base)
-    sw s11, 104(\base)
-    sw t3, 108(\base)
-    sw t4, 112(\base)
-    sw t5, 116(\base)
-    sw t6, 120(\base)
+    .set offset, 0
+    .rept 32
+        sw x\offset, (\base + offset * 8)(x0)
+       .set offset, offset + 1
+    .endr
 .elseif rv64
     sd ra, 0(\base)
     sd sp, 8(\base)
@@ -325,6 +374,7 @@ trap_vector:
 	csrw	mscratch, t6
 	csrr	a0, mepc
 	csrr	a1, mcause
+    csrr    a2, mtval
 	call	trap_handler #from kernel
 	csrw	mepc, a0
 	csrr	t6, mscratch
