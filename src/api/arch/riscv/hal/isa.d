@@ -4,7 +4,7 @@ module api.arch.riscv.hal.isa;
  * Authors: initkfs
  */
 
-import api.arch.riscv.hal.externs : m_get_misa;
+import api.arch.riscv.hal.externs;
 
 __gshared
 {
@@ -82,7 +82,7 @@ string vendorId()
     //ubyte bank = (mvendorid) & 0x7F; //0-6
     //ubyte id = (mvendorid >> 7) & 0x7F; //7-13
 
-    switch (mvendorid)
+    switch (id)
     {
         case 0x00000531:
             return "SiFive";

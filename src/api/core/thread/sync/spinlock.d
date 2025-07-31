@@ -15,7 +15,7 @@ struct Lock
 
     private
     {
-        int lockStatus = Status.unlock;
+        size_t lockStatus = Status.unlock;
     }
 
     alias checkIsLocked this;

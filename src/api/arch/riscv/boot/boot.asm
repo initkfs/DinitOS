@@ -82,6 +82,9 @@ _hlt:
 
 .macro reg_save base
 .ifdef rv32
+    mv t0, sp
+    sw t0, 4(\base)
+
     sw ra, 0(\base)
     sw sp, 4(\base)
     sw gp, 8(\base)
@@ -154,6 +157,7 @@ _hlt:
     lw sp, 4(\base)
     lw gp, 8(\base)
     #lw tp, 12(\base)
+    lw tp, 12(\base)
     lw t0, 16(\base)
     lw t1, 20(\base)
     lw t2, 24(\base)

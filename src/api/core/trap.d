@@ -5,7 +5,7 @@ module api.core.trap;
 
 version (RiscvGeneric)
 {
-   import Interrupts = api.arch.riscv.hal.interrupts;
+    import Interrupts = api.arch.riscv.hal.interrupts;
 }
 else
 {
@@ -30,11 +30,16 @@ void trapInit()
 extern (C) size_t trap_handler(size_t epc, size_t cause)
 {
     auto retPc = epc;
-    auto causeCode = cause & 0x7f_ff_ff_ff;
 
-    enum exceptionBitMask = 1uL << (size_t.sizeof * 8 - 1);
+    //enum exceptionBitMask = 1uL << (size_t.sizeof * 8 - 1);
 
-    const isInterrupt = cause & exceptionBitMask;
+    //bool isAlignEpc = (epc & 0x3) == 0;
+    //(epc) & (__riscv_xlen / 8 - 1)) == 0)
+
+    const isInterrupt = (cause >> (size_t.sizeof * 8 - 1)) & 1;
+    const causeCode = cause & ~(1uL << (size_t.sizeof * 8 - 1));
+    //(epc >= FLASH_START && epc <= FLASH_END) || (epc >= RAM_START && epc <= RAM_END)
+
     if (isInterrupt)
     {
         //Asynchronous handler
