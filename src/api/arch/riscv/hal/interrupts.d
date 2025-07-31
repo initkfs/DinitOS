@@ -88,22 +88,42 @@ void mInterruptVector(size_t value) @trusted
     return Externs.m_set_interrupt_vector(value);
 }
 
-size_t mInterruptIsEnable() @trusted
+void mGlobalInterruptEnable() @trusted
 {
-    return Externs.m_get_interrupt_enable;
+    return Externs.m_set_global_interrupt_enable();
 }
 
-void mInterruptIsEnable(size_t value) @trusted
+void mGlobalInterruptDisable() @trusted
 {
-    Externs.m_set_interrupt_enable(value);
+    return Externs.m_set_global_interrupt_disable();
+}
+
+size_t mLocalInterruptIsEnable() @trusted
+{
+    return Externs.m_get_local_interrupt_enable;
+}
+
+void mLocalInterruptIsEnable(size_t value) @trusted
+{
+    Externs.m_replace_local_interrupt_enable(value);
 }
 
 void mInterruptsDisable() @trusted
 {
-    mInterruptIsEnable(~((~mInterruptIsEnable) | MIE_MTIE));
+    mLocalInterruptIsEnable(~((~mLocalInterruptIsEnable) | MIE_MTIE));
 }
 
 void mInterruptsEnable() @trusted
 {
-    mInterruptIsEnable(mInterruptIsEnable | MIE_MTIE);
+    mLocalInterruptIsEnable(mLocalInterruptIsEnable | MIE_MTIE);
+}
+
+void mTimerInterruptEnable() @trusted
+{
+    Externs.m_set_local_interrupt_enable(MIE_MTIE);
+}
+
+void mTimerInterruptDisable() @trusted
+{
+    Externs.m_clear_local_interrupt_enable(MIE_MTIE);
 }

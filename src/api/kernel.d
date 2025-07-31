@@ -88,6 +88,10 @@ private void runTests()
 
 extern (C) void dstart()
 {
+    import Interrupts = api.arch.riscv.hal.interrupts;
+
+    Interrupts.mGlobalInterruptDisable;
+
     Syslog.setLoad(true);
 
     ubyte* bssStart = cast(ubyte*) get_bss_start;
@@ -116,6 +120,8 @@ extern (C) void dstart()
     Allocator.freeFunc = &BlockAllocator.free;
 
     runTests;
+
+    Interrupts.mGlobalInterruptEnable;
 
     if (isTimer)
     {

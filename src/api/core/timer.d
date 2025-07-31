@@ -58,7 +58,7 @@ void timerInit()
     mScratch.interval = interval;
     Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
-    Interrupts.mInterruptIsEnable(Interrupts.mInterruptIsEnable | Interrupts.MIE_MTIE);
+    Interrupts.mTimerInterruptEnable;
 
     // uint64_t read_mtime()
     // {
@@ -75,12 +75,12 @@ void timerInit()
 
 extern (C) size_t timer_handler(size_t epc, size_t cause)
 {
-    Interrupts.mInterruptsDisable;
+    Interrupts.mGlobalInterruptDisable;
 
     auto id = Harts.mhartId();
     writeIntevalToTimer(id);
 
-    Interrupts.mInterruptsEnable;
+    Interrupts.mGlobalInterruptDisable;
 
     Syslog.trace("Call timer handler");
 

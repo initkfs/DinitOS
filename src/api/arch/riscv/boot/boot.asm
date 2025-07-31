@@ -265,35 +265,57 @@ ret
 m_set_scratch:
 csrw mscratch, a0
 ret
-.globl m_get_interrupt_enable
-m_get_interrupt_enable:
-csrr a0, mie
-ret
-.globl m_set_interrupt_enable
-m_set_interrupt_enable:
-csrw mie, a0
-ret
+
+.equ MSTATUS_MIE_BIT, 3   # 3 - Machine Interrupt Enable
+.equ MSTATUS_MIE_MASK, 1 << MSTATUS_MIE_BIT  # 0x8 (1 << 3)
+
+.globl m_set_global_interrupt_enable
+m_set_global_interrupt_enable:
+    csrsi mstatus, MSTATUS_MIE_MASK  # MIE in mstatus
+    ret
+
+.globl m_set_global_interrupt_disable
+m_set_global_interrupt_disable:
+    csrci mstatus, MSTATUS_MIE_MASK  # reset MIE in mstatus
+    ret
+
+.globl m_check_global_interrupt_is_enable
+m_check_global_interrupt_is_enable:
+    csrr a0, mstatus
+    andi a0, a0, MSTATUS_MIE_MASK
+    snez a0, a0 # return 1 or 0
+    ret
+
+.globl m_get_local_interrupt_enable
+m_get_local_interrupt_enable:
+    csrr a0, mie
+    ret
+
+.globl m_replace_local_interrupt_enable
+m_replace_local_interrupt_enable:
+    csrw mie, a0
+    ret
 
 .globl m_set_interrupt_vector
-m_set_interrupt_vector:
-csrw mtvec, a0
+    m_set_interrupt_vector:
+    csrw mtvec, a0
 ret
+
+.globl m_set_local_interrupt_enable
+m_set_local_interrupt_enable:
+    csrs mie, a0
+    ret
+
+.globl m_clear_local_interrupt_enable
+m_clear_local_interrupt_enable:
+    csrc mie, a0
+    ret
 
 .globl context_switch
 context_switch:
     context_save a0  # a0 old context ptr
     context_load a1  # a1 new context ptr
     ret
-
-.globl system_timer
-#system_timer(size_t epc, size_t cause)
-.align(4)
-system_timer:
-	csrr	a0, mepc
-	csrr	a1, mcause
-	call	timer_handler #from kernel
-	csrw	mepc, a0
-	mret
 
 .globl trap_vector
 .align(4)
@@ -366,12 +388,6 @@ cas_lrsc_fail:
 .globl set_minterrupt_vector_trap
 set_minterrupt_vector_trap:
     la a0, trap_vector
-    csrw mtvec, a0
-    ret
-
-.globl set_minterrupt_vector_timer
-set_minterrupt_vector_timer:
-    la a0, system_timer
     csrw mtvec, a0
     ret
 
