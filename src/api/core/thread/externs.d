@@ -12,10 +12,10 @@ version (Riscv32)
     //  return true;
     //} 
     //return false
-    size_t cas_lrsc(scope int* addr, int expectedInAddr, int newValueIfAddrEqvExpected);
+    size_t cas_lrsc(scope uint* addr, int expectedInAddr, int newValueIfAddrEqvExpected);
 
-    size_t swap_acquire(scope int* lockPtr);
-    size_t swap_release(scope int* lockPtr);
+    size_t swap_acquire(scope uint* lockPtr);
+    size_t swap_release(scope uint* lockPtr);
 }
 
 version (Riscv64)

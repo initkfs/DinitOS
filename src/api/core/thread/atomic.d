@@ -7,14 +7,9 @@ import Externs = api.core.thread.externs;
 
 version (Riscv32)
 {
-    bool cas(int* ptr, int expected, int desired)
-    {
-        return cast(bool) Externs.cas_lrsc(ptr, expected, desired);
-    }
-
     bool cas(uint* ptr, int expected, int desired)
     {
-        return cast(bool) Externs.cas_lrsc(cast(int*) ptr, expected, desired);
+        return cast(bool) Externs.cas_lrsc(ptr, expected, desired);
     }
 }
 

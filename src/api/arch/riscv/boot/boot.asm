@@ -160,11 +160,37 @@ _hlt:
 
 .macro reg_save base
 .ifdef rv32
-    .set offset, 0
-    .rept 32
-        sw x\offset, (\base + offset * 8)(x0)
-       .set offset, offset + 1
-    .endr
+    sw ra, 0(\base)
+    sw sp, 4(\base)
+    sw gp, 8(\base)
+    sw tp, 12(\base)
+    sw t0, 16(\base)
+    sw t1, 20(\base)
+    sw t2, 24(\base)
+    sw s0, 28(\base)
+    sw s1, 32(\base)
+    sw a0, 36(\base)
+    sw a1, 40(\base)
+    sw a2, 44(\base)
+    sw a3, 48(\base)
+    sw a4, 52(\base)
+    sw a5, 56(\base)
+    sw a6, 60(\base)
+    sw a7, 64(\base)
+    sw s2, 68(\base)
+    sw s3, 72(\base)
+    sw s4, 76(\base)
+    sw s5, 80(\base)
+    sw s6, 84(\base)
+    sw s7, 88(\base)
+    sw s8, 92(\base)
+    sw s9, 96(\base)
+    sw s10, 100(\base)
+    sw s11, 104(\base)
+    sw t3, 108(\base)
+    sw t4, 112(\base)
+    sw t5, 116(\base)
+    sw t6, 120(\base)
 .elseif rv64
     sd ra, 0(\base)
     sd sp, 8(\base)
@@ -335,13 +361,13 @@ m_check_global_interrupt_is_enable:
     snez a0, a0 # return 1 or 0
     ret
 
-.globl m_get_local_interrupt_enable
-m_get_local_interrupt_enable:
+.globl m_get_local_interrupts
+m_get_local_interrupts:
     csrr a0, mie
     ret
 
-.globl m_replace_local_interrupt_enable
-m_replace_local_interrupt_enable:
+.globl m_replace_local_interrupts
+m_replace_local_interrupts:
     csrw mie, a0
     ret
 

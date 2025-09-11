@@ -14,7 +14,7 @@ void halt()
         static assert(false, "Not supported platform");
     }
 
-    Interrupts.mInterruptsDisable;
+    Interrupts.mGlobalInterruptDisable;
 
     while (true)
     {

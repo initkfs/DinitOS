@@ -45,15 +45,9 @@ ulong mTimeRegCmpAddr(size_t hartid) @trusted
     return clintBase + clintCompareRegHurtOffset + clintMtimecmpSize * hartid;
 }
 
-ulong mTime() @trusted
-{
-    return clintBase + clintTimerRegOffset;
-}
+ulong mTime() @trusted => clintBase + clintTimerRegOffset;
 
-size_t mStatus() @trusted
-{
-    return Externs.m_get_status;
-}
+size_t mStatus() @trusted => Externs.m_get_status;
 
 void mStatus(size_t status) @trusted
 {
@@ -73,49 +67,37 @@ void mExceptionCounter(size_t c) @trusted
     Externs.m_set_exception_counter(c);
 }
 
-size_t mExceptionCounter() @trusted
-{
-    return Externs.m_get_exception_counter;
-}
+size_t mExceptionCounter() @trusted => Externs.m_get_exception_counter;
 
 void mScratch(size_t value) @trusted
 {
     Externs.m_set_scratch(value);
 }
 
-void mInterruptVector(size_t value) @trusted
-{
-    return Externs.m_set_interrupt_vector(value);
-}
+void mInterruptVector(size_t value) @trusted => Externs.m_set_interrupt_vector(value);
 
-void mGlobalInterruptEnable() @trusted
-{
-    return Externs.m_set_global_interrupt_enable();
-}
+void mGlobalInterruptEnable() @trusted => Externs.m_set_global_interrupt_enable();
 
 void mGlobalInterruptDisable() @trusted
 {
     return Externs.m_set_global_interrupt_disable();
 }
 
-size_t mLocalInterruptIsEnable() @trusted
+size_t mLocalInterrupts() @trusted => Externs.m_get_local_interrupts;
+
+void mLocalInterrupts(size_t value) @trusted
 {
-    return Externs.m_get_local_interrupt_enable;
+    Externs.m_replace_local_interrupts(value);
 }
 
-void mLocalInterruptIsEnable(size_t value) @trusted
+void mExternalInterruptEnable() @trusted
 {
-    Externs.m_replace_local_interrupt_enable(value);
+    Externs.m_set_local_interrupt_enable(MIE_MEIE);
 }
 
-void mInterruptsDisable() @trusted
+void mExternalInterruptDisable() @trusted
 {
-    mLocalInterruptIsEnable(~((~mLocalInterruptIsEnable) | MIE_MTIE));
-}
-
-void mInterruptsEnable() @trusted
-{
-    mLocalInterruptIsEnable(mLocalInterruptIsEnable | MIE_MTIE);
+    Externs.m_clear_local_interrupt_enable(MIE_MEIE);
 }
 
 void mTimerInterruptEnable() @trusted
@@ -126,4 +108,14 @@ void mTimerInterruptEnable() @trusted
 void mTimerInterruptDisable() @trusted
 {
     Externs.m_clear_local_interrupt_enable(MIE_MTIE);
+}
+
+void mSoftwareInterruptEnable() @trusted
+{
+    Externs.m_set_local_interrupt_enable(MIE_MSIE);
+}
+
+void mSoftwareInterruptDisable() @trusted
+{
+    Externs.m_clear_local_interrupt_enable(MIE_MSIE);
 }

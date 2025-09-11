@@ -22,9 +22,9 @@ void m_set_exception_counter(size_t c);
 void m_set_scratch(size_t s);
 size_t m_get_scratch();
 
-size_t m_get_local_interrupt_enable();
+size_t m_get_local_interrupts();
 void m_set_local_interrupt_enable(size_t v);
 void m_clear_local_interrupt_enable(size_t v);
-size_t m_replace_local_interrupt_enable(size_t v);
+size_t m_replace_local_interrupts(size_t v);
 
 void m_set_interrupt_vector(size_t v);

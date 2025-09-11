@@ -75,12 +75,13 @@ void timerInit()
 
 extern (C) size_t timer_handler(size_t epc, size_t cause)
 {
+    //TODO or MTIE?
     Interrupts.mGlobalInterruptDisable;
 
     auto id = Harts.mhartId();
     writeIntevalToTimer(id);
 
-    Interrupts.mInterruptsEnable;
+    Interrupts.mGlobalInterruptDisable;
 
     Syslog.trace("Call timer handler");
 
