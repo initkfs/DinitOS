@@ -6,6 +6,7 @@ module api.core.thread.task;
 import api.core.io.cstdio;
 
 import Syslog = api.core.log.syslog;
+import Critical = api.core.thread.critical;
 
 alias SignalSet = uint;
 
@@ -116,15 +117,27 @@ size_t taskCreate(void function() t)
 void switchToTask(Task* task)
 {
     assert(task);
+
+    Critical.startCritical;
+
     currentTask = task;
     assert(currentTask.state != TaskState.running);
     currentTask.state = TaskState.running;
     osTask.state = TaskState.sleep;
+    
+    Critical.endCritical;
+
     context_switch(&(osTask.context), &(currentTask.context));
 }
 
 bool hasStateTask(TaskState state)
 {
+    Critical.startCritical;
+    scope (exit)
+    {
+        Critical.endCritical;
+    }
+
     foreach (ti; 0 .. taskCount)
     {
         Task* task = &tasks[ti];
@@ -167,6 +180,8 @@ protected void roundrobin()
         attempts++;
     }
 
+    Critical.endCritical;
+
     if (next)
     {
         switchToTask(next);
@@ -193,6 +208,8 @@ void switchToOs()
         return;
     }
 
+    Critical.startCritical;
+
     auto oldTask = currentTask;
     if (oldTask.state == TaskState.running)
     {
@@ -211,6 +228,8 @@ SignalSet signalWait(SignalSet waitmask)
 {
     assert(currentTask);
 
+    Critical.startCritical;
+
     if (currentTask.pendingSignals & waitmask)
     {
         SignalSet received = currentTask.pendingSignals & waitmask;
@@ -220,6 +239,8 @@ SignalSet signalWait(SignalSet waitmask)
 
     currentTask.state = TaskState.waitSignal;
     currentTask.waitingMask = waitmask;
+
+    Critical.endCritical;
 
     yield;
 
@@ -237,6 +258,12 @@ void addSignalHandler(void function() handler, uint mask)
     assert(mask > 0);
     assert((mask & (mask - 1)) == 0, "Invalid mask");
 
+    Critical.startCritical;
+    scope (exit)
+    {
+        Critical.endCritical;
+    }
+
     //TODO more optimal
     foreach (hi; 0 .. currentTask.signalHandlers.length)
     {
@@ -248,8 +275,14 @@ void addSignalHandler(void function() handler, uint mask)
     }
 }
 
-void callSignalHandlers(uint mask)
+protected void callSignalHandlers(uint mask)
 {
+    Critical.startCritical;
+    scope (exit)
+    {
+        Critical.endCritical;
+    }
+
     foreach (si; 0 .. currentTask.signalHandlers.length)
     {
         if ((mask & (1UL << si)) && currentTask.signalHandlers[si])
@@ -259,7 +292,7 @@ void callSignalHandlers(uint mask)
     }
 }
 
-bool signalsInit(Task* task)
+protected bool signalsInit(Task* task)
 {
     assert(task);
     task.pendingSignals = 0;
@@ -271,6 +304,12 @@ bool signalsInit(Task* task)
 
 bool signalSend(size_t tid, ubyte signal)
 {
+    Critical.startCritical;
+    scope (exit)
+    {
+        Critical.endCritical;
+    }
+
     assert(tid < taskCount);
 
     Task* targetTask = &tasks[tid];
