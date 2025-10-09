@@ -7,6 +7,8 @@ import api.core.io.cstdio;
 
 import Syslog = api.core.log.syslog;
 
+alias SignalSet = uint;
+
 enum taskMaxCount = 16;
 enum taskStacksSize = 2048;
 
@@ -32,17 +34,32 @@ align(1):
     reg_t s11;
 }
 
-enum TaskState {
+enum TaskState
+{
     none,
-    created,
+    ready,
     running,
-    sleep
+    sleep,
+    waitSignal,
+    //need reset
+    killed,
+    completed
 }
 
 struct Task
 {
     TaskState state;
+    size_t sheduleCount;
+    uint signals;
+    int eventFlags;
+    int waitEvents;
+    uint yieldСount;
     RegContext context;
+
+    SignalSet pendingSignals;
+    SignalSet waitingMask;
+    SignalSet handledSignals;
+    void function()[uint.sizeof * 8] signalHandlers;
 }
 
 __gshared
@@ -51,48 +68,217 @@ __gshared
     Task[taskMaxCount] tasks;
 
     Task osTask;
+    bool isInitOsTask;
     Task* currentTask;
+    size_t taskIndex;
 
     size_t taskCount;
+}
+
+private
+{
+    extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
+    extern (C) void m_wait();
+}
+
+void initSheduler()
+{
+
+}
+
+//TODO first call
+bool isOsTask() => currentTask is &osTask;
+
+void checkOsTask()
+{
+    assert(isOsTask, "The current task is not an IDLE task.");
 }
 
 size_t taskCreate(void function() t)
 {
     auto i = taskCount;
+    assert(i < tasks.length);
+
     Task* taskPtr = &tasks[i];
     assert(taskPtr.state == TaskState.none);
-    taskPtr.state = TaskState.created;
+
+    taskPtr.state = TaskState.ready;
     taskPtr.context.ra = cast(reg_t) t;
     taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 1]);
-    
+
+    signalsInit(taskPtr);
+
     taskCount++;
 
     return i;
 }
 
-void switchOsToTask(size_t i)
+void switchToTask(Task* task)
 {
-    currentTask = &tasks[i];
+    assert(task);
+    currentTask = task;
     assert(currentTask.state != TaskState.running);
     currentTask.state = TaskState.running;
     osTask.state = TaskState.sleep;
     context_switch(&(osTask.context), &(currentTask.context));
 }
 
-void switchTaskToOs()
+bool hasStateTask(TaskState state)
 {
+    foreach (ti; 0 .. taskCount)
+    {
+        Task* task = &tasks[ti];
+        if (task == currentTask)
+        {
+            continue;
+        }
+
+        if (task.state == state)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool hasReadyTasks() => hasStateTask(TaskState.ready);
+
+protected void roundrobin()
+{
+    Task* next;
+    size_t attempts;
+
+    while (attempts < taskCount)
+    {
+        taskIndex = currentTask ? (taskIndex + 1) % taskCount : 0;
+        Task* mustBeNext = &tasks[taskIndex];
+
+        if ((mustBeNext.state == TaskState.waitSignal) &&
+            (mustBeNext.pendingSignals & mustBeNext.waitingMask))
+        {
+            mustBeNext.state = TaskState.ready;
+        }
+
+        if (mustBeNext.state == TaskState.ready)
+        {
+            next = mustBeNext;
+            break;
+        }
+        attempts++;
+    }
+
+    if (next)
+    {
+        switchToTask(next);
+    }
+
+    m_wait();
+}
+
+void step()
+{
+    Syslog.trace("Run sheduler step");
+    roundrobin;
+}
+
+void yield()
+{
+    switchToOs;
+}
+
+void switchToOs()
+{
+    if (isOsTask)
+    {
+        return;
+    }
+
     auto oldTask = currentTask;
-    assert(oldTask.state == TaskState.running);
-    oldTask.state = TaskState.sleep;
-   
+    if (oldTask.state == TaskState.running)
+    {
+        oldTask.state = TaskState.ready;
+    }
+
     currentTask = &osTask;
     assert(currentTask.state == TaskState.sleep);
     currentTask.state = TaskState.running;
-    
+    currentTask.yieldСount++;
+
     context_switch(&(oldTask.context), &(currentTask.context));
 }
 
-private
+SignalSet signalWait(SignalSet waitmask)
 {
-    extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
+    assert(currentTask);
+
+    if (currentTask.pendingSignals & waitmask)
+    {
+        SignalSet received = currentTask.pendingSignals & waitmask;
+        currentTask.pendingSignals &= ~received;
+        return received;
+    }
+
+    currentTask.state = TaskState.waitSignal;
+    currentTask.waitingMask = waitmask;
+
+    yield;
+
+    SignalSet received = currentTask.pendingSignals & waitmask;
+    currentTask.pendingSignals &= ~received;
+
+    callSignalHandlers(received);
+
+    return received;
+}
+
+void addSignalHandler(void function() handler, uint mask)
+{
+    assert(currentTask);
+    assert(mask > 0);
+    assert((mask & (mask - 1)) == 0, "Invalid mask");
+
+    //TODO more optimal
+    foreach (hi; 0 .. currentTask.signalHandlers.length)
+    {
+        if (mask & (1u << hi))
+        {
+            currentTask.signalHandlers[hi] = handler;
+            break;
+        }
+    }
+}
+
+void callSignalHandlers(uint mask)
+{
+    foreach (si; 0 .. currentTask.signalHandlers.length)
+    {
+        if ((mask & (1UL << si)) && currentTask.signalHandlers[si])
+        {
+            currentTask.signalHandlers[si]();
+        }
+    }
+}
+
+bool signalsInit(Task* task)
+{
+    assert(task);
+    task.pendingSignals = 0;
+    task.waitingMask = 0;
+    task.handledSignals = 0;
+    task.signalHandlers[] = null;
+    return true;
+}
+
+bool signalSend(size_t tid, ubyte signal)
+{
+    assert(tid < taskCount);
+
+    Task* targetTask = &tasks[tid];
+    if (!targetTask || targetTask == currentTask)
+    {
+        return false;
+    }
+
+    targetTask.pendingSignals |= (1u << signal);
+    return true;
 }

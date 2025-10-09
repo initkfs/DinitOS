@@ -67,7 +67,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 Interrupts.mLocalInterrupts(
                     ~((~Interrupts.mLocalInterrupts) | Interrupts.MIE_MTIE));
                 timer_handler(epc, cause);
-                retPc = cast(size_t)&switchTaskToOs;
+                retPc = cast(size_t)&switchToOs;
                 // enable timer interrupts.
                 Interrupts.mLocalInterrupts(Interrupts.mLocalInterrupts | Interrupts.MIE_MTIE);
                 break;
@@ -136,9 +136,9 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 break;
         }
 
-        // while (true)
-        // {
-        // }
+        import api.core.errors: halt;
+
+        halt;
     }
     return retPc;
 }

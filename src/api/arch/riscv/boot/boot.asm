@@ -392,6 +392,11 @@ context_switch:
     context_load a1  # a1 new context ptr
     ret
 
+.globl m_wait
+m_wait:
+    wfi
+    ret
+
 .globl trap_vector
 .align(4)
 trap_vector:

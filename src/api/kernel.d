@@ -86,6 +86,12 @@ private void runTests()
     }
 }
 
+__gshared {
+    size_t tid;
+    size_t tid1;
+    size_t tid2;
+}
+
 extern (C) void dstart()
 {
     import Interrupts = api.arch.riscv.hal.interrupts;
@@ -123,23 +129,23 @@ extern (C) void dstart()
 
     Interrupts.mGlobalInterruptEnable;
 
+    initSheduler;
+
     if (isTimer)
     {
         timerInit;
         Syslog.info("Init timers");
     }
 
-    auto tid = taskCreate(&task0);
-    auto tid1 = taskCreate(&task1);
-    auto tid2 = taskCreate(&task2);
+    tid = taskCreate(&task0);
+    tid1 = taskCreate(&task1);
+    tid2 = taskCreate(&task2);
 
-    size_t taskIndex;
     while (true)
     {
-        Syslog.trace("Switch tasks");
-        switchOsToTask(taskIndex);
-        Syslog.trace("Switch to OS");
-        taskIndex = (taskIndex + 1) % taskCount;
+        Syslog.trace("Sheduler start step");
+        step;
+        Syslog.trace("Sheduler end step");
     }
 }
 
@@ -148,16 +154,24 @@ void task0()
     Syslog.trace("Enable LED1.");
     while (true)
     {
-        Syslog.trace("LED1 ON");
-        // foreach (i; 0 .. 50)
-        // {
-        //     Spinlock.acquire(&lock);
-        //     sharedCounter++;
-        //     Spinlock.free(&lock);
-        //     delayTicks(100);
-        // }
+        Syslog.trace("LED1 start");
+
+        addSignalHandler(&sigHandler1, 8);
+
+        signalWait(8);
+        
+        
+        Syslog.trace("LED1 end");
         delayTicks;
     }
+}
+
+void sigHandler1(){
+    Syslog.trace("Signal 1");
+}
+
+void sigHandler2(){
+    Syslog.trace("Signal 2");
 }
 
 void task1()
@@ -166,6 +180,9 @@ void task1()
     while (true)
     {
         Syslog.trace("LED2 ON");
+
+        signalSend(tid, 3);
+
         delayTicks;
     }
 }

@@ -26,7 +26,13 @@ version (RiscvGenericSMP)
 
 //Round-Robin. 1-10ms
 //RTOS. 100 mcs - 1 ms
-enum startIntervalSec = 5;
+/** 
+ * Linux embedded	100-1000 Hz	1-10 ms
+   Real-Time	    100-500 Hz  2-10 ms
+   MCU          	10-100 Hz   10-100 ms
+   low power        1-10 Hz     100-1000 ms
+ */
+enum startIntervalSec = 1;
 
 __gshared TimerScratch[Interrupts.numCores] timerMscratchs;
 
