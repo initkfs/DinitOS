@@ -31,6 +31,15 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
 {
     auto retPc = epc;
 
+    //Interrupts.mGlobalInterruptDisable;
+
+    //MIE = 1
+    //MIE in MPIE (Machine Previous Interrupt Enable)
+    //clear MIE (Machine Interrupt Enable) 
+    //mret
+    //MIE from MPIE
+    //MPIE = 1
+
     //enum exceptionBitMask = 1uL << (size_t.sizeof * 8 - 1);
 
     //bool isAlignEpc = (epc & 0x3) == 0;
@@ -62,14 +71,8 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 break;
             case 7:
                 Syslog.trace("Machine timer interrupt.");
-
-                // disable timer interrupts.
-                Interrupts.mLocalInterrupts(
-                    ~((~Interrupts.mLocalInterrupts) | Interrupts.MIE_MTIE));
                 timer_handler(epc, cause);
-                retPc = cast(size_t)&switchToOs;
-                // enable timer interrupts.
-                Interrupts.mLocalInterrupts(Interrupts.mLocalInterrupts | Interrupts.MIE_MTIE);
+                //retPc = cast(size_t)&switchToOs;
                 break;
             case 8:
                 Syslog.trace("User external interrupt.");

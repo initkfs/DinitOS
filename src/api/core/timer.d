@@ -38,9 +38,6 @@ __gshared TimerScratch[Interrupts.numCores] timerMscratchs;
 
 struct TimerScratch
 {
-align(1):
-    //timervec
-    size_t[3] saveRegisters;
     size_t clintCmpRegister;
     size_t interval;
 }
@@ -62,7 +59,7 @@ void timerInit()
     //TODO or 64-bit timer register?
     mScratch.clintCmpRegister = cast(size_t) Interrupts.mTimeRegCmpAddr(id);
     mScratch.interval = interval;
-    Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
+    //Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
     Interrupts.mTimerInterruptEnable;
 
@@ -82,15 +79,9 @@ void timerInit()
 extern (C) size_t timer_handler(size_t epc, size_t cause)
 {
     //TODO or MTIE?
-    Interrupts.mGlobalInterruptDisable;
-
     auto id = Harts.mhartId();
     writeIntevalToTimer(id);
-
-    Interrupts.mGlobalInterruptDisable;
-
-    Syslog.trace("Call timer handler");
-
+    //Syslog.trace("Call timer handler");
     return epc;
 }
 

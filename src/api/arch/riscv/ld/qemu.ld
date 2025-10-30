@@ -46,9 +46,9 @@ SECTIONS
 
    .isrstack : {
      . = ALIGN(8);
-      _interrupt_stack_top = .;
+      _interrupt_stack_end = .;
       . += 2048;
-     _interrupt_stack_end = .;
+     _interrupt_stack_top = .;
     }  >ram AT>ram :isrstack
   
   .kstack : {

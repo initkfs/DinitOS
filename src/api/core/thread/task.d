@@ -17,7 +17,6 @@ alias reg_t = size_t;
 
 struct RegContext
 {
-align(1):
     reg_t ra;
     reg_t sp;
     //saved
@@ -35,6 +34,8 @@ align(1):
     reg_t s11;
 }
 
+static assert(RegContext.sizeof == (14 * size_t.sizeof), "Wrong context size");
+
 enum TaskState
 {
     none,
@@ -50,11 +51,13 @@ enum TaskState
 struct Task
 {
     TaskState state;
+    string name;
     size_t sheduleCount;
     uint signals;
     int eventFlags;
     int waitEvents;
     uint yieldСount;
+
     RegContext context;
 
     SignalSet pendingSignals;
@@ -79,12 +82,14 @@ __gshared
 private
 {
     extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
+    extern (C) void context_save_task(RegContext* context);
+    extern (C) void context_load_task(RegContext* context);
     extern (C) void m_wait();
 }
 
 void initSheduler()
 {
-
+    osTask.name = "IDLE";
 }
 
 //TODO first call
@@ -95,7 +100,7 @@ void checkOsTask()
     assert(isOsTask, "The current task is not an IDLE task.");
 }
 
-size_t taskCreate(void function() t)
+size_t taskCreate(void function() t, string name)
 {
     auto i = taskCount;
     assert(i < tasks.length);
@@ -103,9 +108,15 @@ size_t taskCreate(void function() t)
     Task* taskPtr = &tasks[i];
     assert(taskPtr.state == TaskState.none);
 
+    taskPtr.name= name;
+
+    assert(taskPtr.context.ra == 0);
+    assert(taskPtr.context.sp == 0);
+
     taskPtr.state = TaskState.ready;
     taskPtr.context.ra = cast(reg_t) t;
-    taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 1]);
+    taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 16]);
+    taskPtr.context.sp = taskPtr.context.sp & ~0xF;
 
     signalsInit(taskPtr);
 
@@ -124,7 +135,7 @@ void switchToTask(Task* task)
     assert(currentTask.state != TaskState.running);
     currentTask.state = TaskState.running;
     osTask.state = TaskState.sleep;
-    
+
     Critical.endCritical;
 
     context_switch(&(osTask.context), &(currentTask.context));
@@ -163,8 +174,12 @@ protected void roundrobin()
 
     while (attempts < taskCount)
     {
-        taskIndex = currentTask ? (taskIndex + 1) % taskCount : 0;
+        if(taskIndex >= taskCount){
+            taskIndex = 0;
+        }
+
         Task* mustBeNext = &tasks[taskIndex];
+        taskIndex++;
 
         if ((mustBeNext.state == TaskState.waitSignal) &&
             (mustBeNext.pendingSignals & mustBeNext.waitingMask))
@@ -180,14 +195,47 @@ protected void roundrobin()
         attempts++;
     }
 
-    Critical.endCritical;
-
     if (next)
     {
         switchToTask(next);
+        return;
     }
 
     m_wait();
+}
+
+extern(C) void roundrobinChoose()
+{
+    Task* next;
+    size_t attempts;
+
+    while (attempts < taskCount)
+    {
+        if(taskIndex >= taskCount){
+            taskIndex = 0;
+        }
+
+        Task* mustBeNext = &tasks[taskIndex];
+        taskIndex++;
+
+        if ((mustBeNext.state == TaskState.waitSignal) &&
+            (mustBeNext.pendingSignals & mustBeNext.waitingMask))
+        {
+            mustBeNext.state = TaskState.ready;
+        }
+
+        if (mustBeNext.state == TaskState.ready)
+        {
+            next = mustBeNext;
+            break;
+        }
+        attempts++;
+    }
+
+    if (next)
+    {
+        currentTask = next;
+    }
 }
 
 void step()
@@ -201,14 +249,21 @@ void yield()
     switchToOs;
 }
 
-void switchToOs()
-{
-    if (isOsTask)
-    {
-        return;
-    }
+extern(C) void saveCurrentTask(){
+    context_save_task(&currentTask.context);
+}
 
-    Critical.startCritical;
+extern(C) void loadCurrentTask(){
+    context_load_task(&currentTask.context);
+}
+
+extern(C) void switchToOs()
+{
+    // if(isOsTask){
+    //     return;
+    // }
+
+    //Critical.startCritical;
 
     auto oldTask = currentTask;
     if (oldTask.state == TaskState.running)

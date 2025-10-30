@@ -127,8 +127,6 @@ extern (C) void dstart()
 
     runTests;
 
-    Interrupts.mGlobalInterruptEnable;
-
     initSheduler;
 
     if (isTimer)
@@ -137,9 +135,11 @@ extern (C) void dstart()
         Syslog.info("Init timers");
     }
 
-    tid = taskCreate(&task0);
-    tid1 = taskCreate(&task1);
-    tid2 = taskCreate(&task2);
+    tid = taskCreate(&task0, "task0");
+    tid1 = taskCreate(&task1, "task1");
+    //tid2 = taskCreate(&task2);
+
+    //Interrupts.mGlobalInterruptEnable;
 
     while (true)
     {
@@ -151,19 +151,26 @@ extern (C) void dstart()
 
 void task0()
 {
-    Syslog.trace("Enable LED1.");
+    int isContinue = 0x10203040;
+    Syslog.trace("Enter task0");
+    
     while (true)
     {
-        Syslog.trace("LED1 start");
+        Syslog.trace("Start task0");
+        //plop();
+        //yield;
+        assert(isContinue == 0x10203040);
+        //yield;
+        Syslog.trace("End task0");
 
-        addSignalHandler(&sigHandler1, 8);
+        //addSignalHandler(&sigHandler1, 8);
 
-        signalWait(8);
-        
-        
-        Syslog.trace("LED1 end");
+        //signalWait(8);
         delayTicks;
     }
+}
+
+extern(C) void plop(){
 }
 
 void sigHandler1(){
@@ -176,12 +183,13 @@ void sigHandler2(){
 
 void task1()
 {
-    Syslog.trace("Enable LED2.");
+    Syslog.trace("Enter task1");
     while (true)
     {
-        Syslog.trace("LED2 ON");
-
-        signalSend(tid, 3);
+        Syslog.trace("Start task1");
+        //yield;
+        //signalSend(tid, 3);
+        Syslog.trace("End task1");
 
         delayTicks;
     }
@@ -199,7 +207,7 @@ void task2()
 
 void delayTicks(int count = 1000)
 {
-    long counter = count * 5000000;
+    long counter = count * 50000;
     while (counter--)
     {
     }

@@ -6,6 +6,9 @@
 _start:
     csrr a0, mhartid
     bnez a0, _hlt
+    la t0, _interrupt_stack_top
+    csrw mscratch, t0
+
     la sp, _stack_start
     call dstart
 _hlt:
@@ -295,6 +298,142 @@ _hlt:
 .endif  
 .endm
 
+.macro reg_save_isr base
+.ifdef rv32
+    sw ra, 0(\base)
+    # sw sp, 4(\base)
+    sw gp, 4(\base)    #  4
+    sw tp, 8(\base)    #  8
+    sw t0, 12(\base)   #  12
+    sw t1, 16(\base)   #  16
+    sw t2, 20(\base)   #  20
+    sw s0, 24(\base)   #  24
+    sw s1, 28(\base)   #  28
+    sw a0, 32(\base)   #  32
+    sw a1, 36(\base)   #  36
+    sw a2, 40(\base)   #  40
+    sw a3, 44(\base)   #  44
+    sw a4, 48(\base)   #  48
+    sw a5, 52(\base)   #  52
+    sw a6, 56(\base)   #  56
+    sw a7, 60(\base)   #  60
+    sw s2, 64(\base)   #  64
+    sw s3, 68(\base)   #  68
+    sw s4, 72(\base)   #  72
+    sw s5, 76(\base)   #  76
+    sw s6, 80(\base)   #  80
+    sw s7, 84(\base)   #  84
+    sw s8, 88(\base)   #  88
+    sw s9, 92(\base)   #  92
+    sw s10, 96(\base)  #  96
+    sw s11, 100(\base) #  100
+    sw t3, 104(\base)  #  104
+    sw t4, 108(\base)  #  108
+    sw t5, 112(\base)  #  112
+    sw t6, 116(\base)  #  116
+.elseif rv64
+    sd ra, 0(\base)
+    # sd sp, 8(\base)
+    sd gp, 8(\base)    #  8
+    sd tp, 16(\base)   #  16
+    sd t0, 24(\base)   #  24
+    sd t1, 32(\base)   #  32
+    sd t2, 40(\base)   #  40
+    sd s0, 48(\base)   #  48
+    sd s1, 56(\base)   #  56
+    sd a0, 64(\base)   #  64
+    sd a1, 72(\base)   #  72
+    sd a2, 80(\base)   #  80
+    sd a3, 88(\base)   #  88
+    sd a4, 96(\base)   #  96
+    sd a5, 104(\base)  #  104
+    sd a6, 112(\base)  #  112
+    sd a7, 120(\base)  #  120
+    sd s2, 128(\base)  #  128
+    sd s3, 136(\base)  #  136
+    sd s4, 144(\base)  #  144
+    sd s5, 152(\base)  #  152
+    sd s6, 160(\base)  #  160
+    sd s7, 168(\base)  #  168
+    sd s8, 176(\base)  #  176
+    sd s9, 184(\base)  #  184
+    sd s10, 192(\base) #  192
+    sd s11, 200(\base) #  200
+    sd t3, 208(\base)  #  208
+    sd t4, 216(\base)  #  216
+    sd t5, 224(\base)  #  224
+    sd t6, 232(\base)  #  232
+.endif  
+.endm
+
+.macro reg_load_isr base
+.ifdef rv32
+    lw ra, 0(\base)
+    # lw sp, 4(\base)
+    lw gp, 4(\base)
+    lw tp, 8(\base)
+    lw t0, 12(\base)
+    lw t1, 16(\base)
+    lw t2, 20(\base)
+    lw s0, 24(\base)
+    lw s1, 28(\base)
+    lw a0, 32(\base)
+    lw a1, 36(\base)
+    lw a2, 40(\base)
+    lw a3, 44(\base)
+    lw a4, 48(\base)
+    lw a5, 52(\base)
+    lw a6, 56(\base)
+    lw a7, 60(\base)
+    lw s2, 64(\base)
+    lw s3, 68(\base)
+    lw s4, 72(\base)
+    lw s5, 76(\base)
+    lw s6, 80(\base)
+    lw s7, 84(\base)
+    lw s8, 88(\base)
+    lw s9, 92(\base)
+    lw s10, 96(\base)
+    lw s11, 100(\base)
+    lw t3, 104(\base)
+    lw t4, 108(\base)
+    lw t5, 112(\base)
+    lw t6, 116(\base)
+.elseif rv64
+    ld ra, 0(\base)
+    # ld sp, 8(\base)
+    ld gp, 8(\base)
+    ld tp, 16(\base)
+    ld t0, 24(\base)
+    ld t1, 32(\base)
+    ld t2, 40(\base)
+    ld s0, 48(\base)
+    ld s1, 56(\base)
+    ld a0, 64(\base)
+    ld a1, 72(\base)
+    ld a2, 80(\base)
+    ld a3, 88(\base)
+    ld a4, 96(\base)
+    ld a5, 104(\base)
+    ld a6, 112(\base)
+    ld a7, 120(\base)
+    ld s2, 128(\base)
+    ld s3, 136(\base)
+    ld s4, 144(\base)
+    ld s5, 152(\base)
+    ld s6, 160(\base)
+    ld s7, 168(\base)
+    ld s8, 176(\base)
+    ld s9, 184(\base)
+    ld s10, 192(\base)
+    ld s11, 200(\base)
+    ld t3, 208(\base)
+    ld t4, 216(\base)
+    ld t5, 224(\base)
+    ld t6, 232(\base)
+.endif  
+.endm
+
 .globl m_get_misa
 m_get_misa:
 csrr a0, misa
@@ -351,7 +490,9 @@ m_set_global_interrupt_enable:
 
 .globl m_set_global_interrupt_disable
 m_set_global_interrupt_disable:
-    csrci mstatus, MSTATUS_MIE_MASK  # reset MIE in mstatus
+    #csrci mstatus, MSTATUS_MIE_MASK  # reset MIE in mstatus
+    li t0, MSTATUS_MIE_MASK
+    csrc mstatus, t0
     ret
 
 .globl m_check_global_interrupt_is_enable
@@ -392,24 +533,47 @@ context_switch:
     context_load a1  # a1 new context ptr
     ret
 
+.globl context_save_task
+context_save_task:
+    context_save a0
+    ret
+
+.globl context_load_task
+context_load_task:
+    context_load a0
+    ret
+
 .globl m_wait
 m_wait:
     wfi
     ret
 
 .globl trap_vector
-.align(4)
+.align(16)
 trap_vector:
-	csrrw	t6, mscratch, t6
-    reg_save t6
-	csrw	mscratch, t6
+    call saveCurrentTask
+	csrrw sp, mscratch, sp
+.ifdef rv32
+    #addi sp, sp, -120
+    addi sp, sp, -128
+.elseif rv64
+    #addi sp, sp, -240
+.endif
+    reg_save_isr sp
 	csrr	a0, mepc
 	csrr	a1, mcause
     csrr    a2, mtval
 	call	trap_handler #from kernel
 	csrw	mepc, a0
-	csrr	t6, mscratch
-	reg_load t6
+	reg_load_isr sp
+.ifdef rv32
+    addi sp, sp, 128
+.elseif rv64
+    addi sp, sp, 240
+.endif
+    csrrw sp, mscratch, sp
+    call roundrobinChoose
+    call loadCurrentTask
 	mret
 
 .globl swap_acquire
