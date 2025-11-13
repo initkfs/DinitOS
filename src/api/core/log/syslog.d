@@ -14,6 +14,11 @@ private __gshared
     bool load;
 }
 
+extern (C) void __ctrace()
+{
+    trace("Trace extern(C)");
+}
+
 //TODO versions
 protected
 {

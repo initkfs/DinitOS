@@ -19,6 +19,7 @@ import Units = api.core.util.units;
 import Bits = api.core.bits;
 import Atomic = api.core.thread.atomic;
 import Spinlock = api.core.thread.sync.spinlock;
+import Critical = api.core.thread.critical;
 
 version (FeatureFloatPoint)
 {
@@ -129,6 +130,8 @@ extern (C) void dstart()
 
     initSheduler;
 
+    Critical.startCritical;
+
     if (isTimer)
     {
         timerInit;
@@ -141,11 +144,14 @@ extern (C) void dstart()
 
     //Interrupts.mGlobalInterruptEnable;
 
+    int isContinue = 0x10203040;
+
     while (true)
     {
         Syslog.trace("Sheduler start step");
-        step;
-        Syslog.trace("Sheduler end step");
+        assert(isContinue == 0x10203040);
+        switchToFirstTask;
+        //Syslog.trace("Sheduler end step");
     }
 }
 
@@ -184,9 +190,11 @@ void sigHandler2(){
 void task1()
 {
     Syslog.trace("Enter task1");
+    int isContinue = 0x10203040;
     while (true)
     {
         Syslog.trace("Start task1");
+        assert(isContinue == 0x10203040);
         //yield;
         //signalSend(tid, 3);
         Syslog.trace("End task1");

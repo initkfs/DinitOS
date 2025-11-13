@@ -8,6 +8,9 @@ import api.core.io.cstdio;
 import Syslog = api.core.log.syslog;
 import Critical = api.core.thread.critical;
 
+import ldc.attributes;
+import ldc.llvmasm;
+
 alias SignalSet = uint;
 
 enum taskMaxCount = 16;
@@ -15,7 +18,7 @@ enum taskStacksSize = 2048;
 
 alias reg_t = size_t;
 
-struct RegContext
+extern (C) struct RegContext
 {
     reg_t ra;
     reg_t sp;
@@ -32,9 +35,13 @@ struct RegContext
     reg_t s9;
     reg_t s10;
     reg_t s11;
+
+    reg_t mepc;
+    reg_t mstatus;
+    reg_t mcause;
 }
 
-static assert(RegContext.sizeof == (14 * size_t.sizeof), "Wrong context size");
+//static assert(RegContext.sizeof == (14 * size_t.sizeof), "Wrong context size");
 
 enum TaskState
 {
@@ -50,6 +57,8 @@ enum TaskState
 
 struct Task
 {
+    RegContext context;
+
     TaskState state;
     string name;
     size_t sheduleCount;
@@ -58,26 +67,28 @@ struct Task
     int waitEvents;
     uint yieldСount;
 
-    RegContext context;
-
     SignalSet pendingSignals;
     SignalSet waitingMask;
     SignalSet handledSignals;
     void function()[uint.sizeof * 8] signalHandlers;
 }
 
-__gshared
+extern (C) __gshared
 {
     ubyte[taskStacksSize][taskMaxCount] taskStacks;
     Task[taskMaxCount] tasks;
 
     Task osTask;
     bool isInitOsTask;
+    Task* osTaskPtr;
     Task* currentTask;
+    Task* firstTask;
     size_t taskIndex;
 
     size_t taskCount;
 }
+
+extern (C) __gshared taskContextOffset = 0;
 
 private
 {
@@ -108,13 +119,14 @@ size_t taskCreate(void function() t, string name)
     Task* taskPtr = &tasks[i];
     assert(taskPtr.state == TaskState.none);
 
-    taskPtr.name= name;
+    taskPtr.name = name;
 
     assert(taskPtr.context.ra == 0);
     assert(taskPtr.context.sp == 0);
 
     taskPtr.state = TaskState.ready;
     taskPtr.context.ra = cast(reg_t) t;
+    taskPtr.context.mepc = taskPtr.context.ra;
     taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 16]);
     taskPtr.context.sp = taskPtr.context.sp & ~0xF;
 
@@ -122,23 +134,48 @@ size_t taskCreate(void function() t, string name)
 
     taskCount++;
 
+    //TODO remove
+    if (!osTaskPtr)
+    {
+        osTaskPtr = &osTask;
+    }
+
+    if (i == 0)
+    {
+        firstTask = taskPtr;
+    }
+
     return i;
 }
 
-void switchToTask(Task* task)
+void switchToFirstTask()
+{
+    assert(taskCount >= 1);
+    switchToTask(&tasks[0]);
+}
+
+extern (C) void switchToTask(Task* task)
 {
     assert(task);
 
     Critical.startCritical;
 
     currentTask = task;
-    assert(currentTask.state != TaskState.running);
+    //assert(currentTask.state != TaskState.running);
     currentTask.state = TaskState.running;
     osTask.state = TaskState.sleep;
 
     Critical.endCritical;
 
+    showContext(&tasks[0].context);
+
     context_switch(&(osTask.context), &(currentTask.context));
+}
+
+extern (C) void showContext(RegContext* ctx)
+{
+    RegContext context = *ctx;
+    return;
 }
 
 bool hasStateTask(TaskState state)
@@ -174,7 +211,8 @@ protected void roundrobin()
 
     while (attempts < taskCount)
     {
-        if(taskIndex >= taskCount){
+        if (taskIndex >= taskCount)
+        {
             taskIndex = 0;
         }
 
@@ -204,38 +242,41 @@ protected void roundrobin()
     m_wait();
 }
 
-extern(C) void roundrobinChoose()
+extern (C) void roundrobinChoose()
 {
     Task* next;
     size_t attempts;
 
     while (attempts < taskCount)
     {
-        if(taskIndex >= taskCount){
+        if (taskIndex >= taskCount)
+        {
             taskIndex = 0;
         }
 
         Task* mustBeNext = &tasks[taskIndex];
         taskIndex++;
 
-        if ((mustBeNext.state == TaskState.waitSignal) &&
-            (mustBeNext.pendingSignals & mustBeNext.waitingMask))
-        {
-            mustBeNext.state = TaskState.ready;
-        }
+        // if ((mustBeNext.state == TaskState.waitSignal) &&
+        //     (mustBeNext.pendingSignals & mustBeNext.waitingMask))
+        // {
+        //     mustBeNext.state = TaskState.ready;
+        // }
 
-        if (mustBeNext.state == TaskState.ready)
-        {
-            next = mustBeNext;
-            break;
-        }
-        attempts++;
+        // if (mustBeNext.state == TaskState.ready)
+        // {
+        //     next = mustBeNext;
+        //     break;
+        // }
+        //attempts++;
+        currentTask = mustBeNext;
+        break;
     }
 
-    if (next)
-    {
-        currentTask = next;
-    }
+    // if (next)
+    // {
+    //     currentTask = next;
+    // }
 }
 
 void step()
@@ -249,34 +290,90 @@ void yield()
     switchToOs;
 }
 
-extern(C) void saveCurrentTask(){
+extern (C) void saveCurrentTask()
+{
     context_save_task(&currentTask.context);
 }
 
-extern(C) void loadCurrentTask(){
+extern (C) void loadCurrentTask()
+{
     context_load_task(&currentTask.context);
 }
 
-extern(C) void switchToOs()
+extern (C) void switchToOs() @naked
 {
-    // if(isOsTask){
-    //     return;
-    // }
+    __asm(
+        "
+    li t0, 1 << 3
+    csrc mstatus, t0
+    la t0, firstTask
+    lw t0, 0(t0) 
+    #la t1, taskContextOffset
+    #lw t1, 0(t1)
+    #add t0, t0, t1 
+
+    sw ra, 0(t0)
+    sw sp, 4(t0)
+    sw s0, 8(t0)
+    sw s1, 12(t0)
+    sw s2, 16(t0)
+    sw s3, 20(t0)
+    sw s4, 24(t0)
+    sw s5, 28(t0)
+    sw s6, 32(t0)
+    sw s7, 36(t0)
+    sw s8, 40(t0)
+    sw s9, 44(t0)
+    sw s10, 48(t0)
+    sw s11, 52(t0)
+
+    la t0, osTaskPtr
+    lw t0, 0(t0)
+    la t1, currentTask
+    sw t0, 0(t1)
+    
+    la t0, currentTask
+    lw t0, 0(t0) 
+    #la t1, taskContextOffset
+    #lw t1, 0(t1)
+    #add t0, t0, t1 
+
+    lw s11, 52(t0)
+    lw s10, 48(t0)
+    lw s9, 44(t0)
+    lw s8, 40(t0)
+    lw s7, 36(t0)
+    lw s6, 32(t0)
+    lw s5, 28(t0)
+    lw s4, 24(t0)
+    lw s3, 20(t0)
+    lw s2, 16(t0)
+    lw s1, 12(t0)
+    lw s0, 8(t0)
+    lw sp, 4(t0)
+    lw ra, 0(t0)
+
+    ret
+    ",
+        "~{memory}"
+    );
+
+    //context_save_task(&currentTask.context);
 
     //Critical.startCritical;
 
-    auto oldTask = currentTask;
-    if (oldTask.state == TaskState.running)
-    {
-        oldTask.state = TaskState.ready;
-    }
+    // auto oldTask = currentTask;
+    // if (oldTask.state == TaskState.running)
+    // {
+    //     oldTask.state = TaskState.ready;
+    // }
 
-    currentTask = &osTask;
-    assert(currentTask.state == TaskState.sleep);
-    currentTask.state = TaskState.running;
-    currentTask.yieldСount++;
+    //currentTask = &osTask;
+    //assert(currentTask.state == TaskState.sleep);
+    //currentTask.state = TaskState.running;
+    //currentTask.yieldСount++;
 
-    context_switch(&(oldTask.context), &(currentTask.context));
+    //context_load_task(&currentTask.context);
 }
 
 SignalSet signalWait(SignalSet waitmask)
