@@ -455,77 +455,18 @@ m_get_mimpid:
 csrr a0, mimpid
 ret
 
-.globl m_get_hart_id
-m_get_hart_id:
-csrr a0, mhartid
-ret
-.globl m_get_status
-m_get_status:
-csrr a0, mstatus
-ret
 .globl m_set_status
 m_set_status:
 csrw mstatus, a0
-ret
-.globl m_set_exception_counter
-m_set_exception_counter:
-csrw mepc, a0
-ret
-.globl m_get_exception_counter
-m_get_exception_counter:
-csrr a0, mepc
-ret
-.globl m_set_scratch
-m_set_scratch:
-csrw mscratch, a0
 ret
 
 .equ MSTATUS_MIE_BIT, 3   # 3 - Machine Interrupt Enable
 .equ MSTATUS_MIE_MASK, 1 << MSTATUS_MIE_BIT  # 0x8 (1 << 3)
 
-.globl m_set_global_interrupt_enable
-m_set_global_interrupt_enable:
-    csrsi mstatus, MSTATUS_MIE_MASK  # MIE in mstatus
-    ret
-
-.globl m_set_global_interrupt_disable
-m_set_global_interrupt_disable:
-    #csrci mstatus, MSTATUS_MIE_MASK  # reset MIE in mstatus
-    li t0, MSTATUS_MIE_MASK
-    csrc mstatus, t0
-    ret
-
-.globl m_check_global_interrupt_is_enable
-m_check_global_interrupt_is_enable:
-    csrr a0, mstatus
-    andi a0, a0, MSTATUS_MIE_MASK
-    snez a0, a0 # return 1 or 0
-    ret
-
-.globl m_get_local_interrupts
-m_get_local_interrupts:
-    csrr a0, mie
-    ret
-
-.globl m_replace_local_interrupts
-m_replace_local_interrupts:
-    csrw mie, a0
-    ret
-
 .globl m_set_interrupt_vector
     m_set_interrupt_vector:
     csrw mtvec, a0
 ret
-
-.globl m_set_local_interrupt_enable
-m_set_local_interrupt_enable:
-    csrs mie, a0
-    ret
-
-.globl m_clear_local_interrupt_enable
-m_clear_local_interrupt_enable:
-    csrc mie, a0
-    ret
 
 .globl context_switch
 context_switch:
@@ -701,6 +642,7 @@ cas_lrsc_fail:
 .globl set_minterrupt_vector_trap
 set_minterrupt_vector_trap:
     la a0, trap_vector
+    #slli t0, t0, 1
     csrw mtvec, a0
     ret
 

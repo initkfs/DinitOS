@@ -138,6 +138,8 @@ extern (C) void dstart()
         Syslog.info("Init timers");
     }
 
+    Critical.endCritical;
+
     tid = taskCreate(&task0, "task0");
     tid1 = taskCreate(&task1, "task1");
     //tid2 = taskCreate(&task2);

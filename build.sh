@@ -141,7 +141,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 #https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
-"$riscvElfLd" --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/ld/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
+"$riscvElfLd" --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/tool/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2
     exit 1
