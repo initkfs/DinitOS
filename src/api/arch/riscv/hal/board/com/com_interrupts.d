@@ -1,11 +1,9 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.hal.board.common.com_interrupts;
+module api.arch.riscv.hal.board.com.com_interrupts;
 
-import api.arch.riscv.hal.board.common.com_interrupts_constants;
-
-import Externs = api.arch.riscv.hal.externs;
+import api.arch.riscv.hal.board.com.com_interrupts_constants;
 
 import ldc.llvmasm;
 

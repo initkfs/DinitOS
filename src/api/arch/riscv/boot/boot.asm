@@ -434,35 +434,6 @@ _hlt:
 .endif  
 .endm
 
-.globl m_get_misa
-m_get_misa:
-csrr a0, misa
-ret
-
-.globl m_get_mvendorid
-m_get_mvendorid:
-csrr a0, mvendorid
-ret
-
-.globl m_get_marchid
-m_get_marchid:
-csrr a0, marchid
-ret
-
-.globl m_get_mimpid
-m_get_mimpid:
-# Machine Implementation ID (mimpid) Register
-csrr a0, mimpid
-ret
-
-.globl m_set_status
-m_set_status:
-csrw mstatus, a0
-ret
-
-.equ MSTATUS_MIE_BIT, 3   # 3 - Machine Interrupt Enable
-.equ MSTATUS_MIE_MASK, 1 << MSTATUS_MIE_BIT  # 0x8 (1 << 3)
-
 .globl m_set_interrupt_vector
     m_set_interrupt_vector:
     csrw mtvec, a0

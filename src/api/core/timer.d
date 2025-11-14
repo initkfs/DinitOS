@@ -7,7 +7,7 @@ import api.core.io.cstdio;
 
 version (RiscvGeneric)
 {
-    import Harts = api.arch.riscv.hal.harts;
+    import Harts = api.arch.riscv.hal.cpu;
     import Interrupts = api.arch.riscv.hal.interrupts;
 }
 else

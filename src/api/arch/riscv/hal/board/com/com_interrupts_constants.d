@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.hal.board.common.com_interrupts_constants;
+module api.arch.riscv.hal.board.com.com_interrupts_constants;
 
 import Platform = api.arch.riscv.hal.platform;
 

@@ -1,10 +1,9 @@
-module api.arch.riscv.hal.isa;
+module api.arch.riscv.hal.board.com.com_cpu;
 
 /**
  * Authors: initkfs
  */
-
-import api.arch.riscv.hal.externs;
+import ldc.llvmasm;
 
 __gshared
 {
@@ -18,6 +17,14 @@ __gshared
     bool isBaseInteger;
     bool isUserMode;
 }
+
+size_t mhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
+
+size_t m_get_misa() @trusted => __asm!size_t("csrr $0, misa", "=r");
+size_t m_get_mvendorid() @trusted => __asm!size_t("csrr $0, mvendorid", "=r");
+size_t m_get_marchid() @trusted => __asm!size_t("csrr $0, marchid", "=r");
+size_t m_get_mimpid() @trusted => __asm!size_t("csrr $0, mimpid", "=r");
+
 
 void loadMisa()
 {
