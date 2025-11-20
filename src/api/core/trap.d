@@ -18,11 +18,9 @@ import api.core.timer;
 
 import Syslog = api.core.log.syslog;
 
-extern (C) void set_minterrupt_vector_trap();
-
 void trapInit()
 {
-    set_minterrupt_vector_trap();
+    Interrupts.set_minterrupt_vector_trap;
 
     Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
 }

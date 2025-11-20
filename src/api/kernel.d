@@ -3,6 +3,9 @@
  */
 module api.kernel;
 
+//Entry point
+import api.arch.riscv.hal.entry;
+
 import Tests = api.core.tests;
 import Syslog = api.core.log.syslog;
 import BlockAllocator = api.core.mem.allocs.block_allocator;

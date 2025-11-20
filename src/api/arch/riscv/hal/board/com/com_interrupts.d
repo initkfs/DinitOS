@@ -101,3 +101,25 @@ void mSoftwareInterruptDisable() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MSIE);
 }
+
+void mSetInterruptVector(size_t* ptr)
+{
+    __asm("csrw mtvec, $0", "r", ptr);
+}
+
+/** 
+ * TODO from pointer
+
+ .globl set_minterrupt_vector_trap
+set_minterrupt_vector_trap:
+    la a0, trap_vector
+    #slli t0, t0, 1
+    csrw mtvec, a0
+    ret
+ */
+void set_minterrupt_vector_trap(){
+    __asm("
+    la a0, trap_vector
+    csrw mtvec, a0
+    ", "");
+}

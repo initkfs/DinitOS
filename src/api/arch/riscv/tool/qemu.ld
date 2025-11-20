@@ -13,7 +13,6 @@ PHDRS
     rodata PT_LOAD;
     data PT_LOAD;
     bss PT_LOAD;
-    isrstack PT_LOAD;
     kstack PT_LOAD;
 }
 
@@ -44,13 +43,6 @@ SECTIONS
     _bss_end = .;
     } >ram AT>ram :bss
 
-   .isrstack : {
-     . = ALIGN(8);
-      _interrupt_stack_end = .;
-      . += 2048;
-     _interrupt_stack_top = .;
-    }  >ram AT>ram :isrstack
-  
   .kstack : {
     . = ALIGN(16);
     . += 4K;
@@ -60,6 +52,6 @@ SECTIONS
     _memory_start = ORIGIN(ram);
     _memory_end = ORIGIN(ram) + LENGTH(ram);
 
-    _heap_start = _stack_start;
+    _heap_start = _memory_start;
     _heap_end = _memory_end;
 }

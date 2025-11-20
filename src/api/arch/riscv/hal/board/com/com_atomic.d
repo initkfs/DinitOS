@@ -3,6 +3,7 @@ module api.arch.riscv.hal.board.com.com_atomic;
 /**
  * Authors: initkfs
  */
+
 import ldc.llvmasm;
 import ldc.attributes;
 

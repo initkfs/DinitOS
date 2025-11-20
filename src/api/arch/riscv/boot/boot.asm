@@ -2,26 +2,6 @@
 /**
  * Author: initkfs
  */
-.globl _start
-_start:
-    csrr a0, mhartid
-    bnez a0, _hlt
-    la t0, _interrupt_stack_top
-    csrw mscratch, t0
-
-    la sp, _stack_start
-    call dstart
-_hlt:
-    wfi
-    j _hlt
-
-# .macro reg_save base
-# .set offset, 0
-# .rept 32
-#     sd x\offset, (\base + offset * 8)(x0)
-#     .set offset, offset + 1
-# .endr
-# .endm
 
 .macro context_save base
 .ifdef rv32
@@ -434,11 +414,6 @@ _hlt:
 .endif  
 .endm
 
-.globl m_set_interrupt_vector
-    m_set_interrupt_vector:
-    csrw mtvec, a0
-ret
-
 .globl context_switch
 context_switch:
     context_save a0  # a0 old context ptr
@@ -453,11 +428,6 @@ context_save_task:
 .globl context_load_task
 context_load_task:
     context_load a0
-    ret
-
-.globl m_wait
-m_wait:
-    wfi
     ret
 
 .globl trap_vector
@@ -507,7 +477,6 @@ trap_save_context:
     sw t1, 64(t0)
 
  trap_vector_start:   
-    csrrw sp, mscratch, sp
 .ifdef rv32
     #addi sp, sp, -120
     addi sp, sp, -128
@@ -527,8 +496,6 @@ trap_save_context:
     addi sp, sp, 240
 .endif
     
-    csrrw sp, mscratch, sp
-
     la t0, currentTask
     lw t0, 0(t0)
     beqz t0, trap_vector_ret
@@ -555,10 +522,3 @@ trap_save_context:
     #csrci mstatus, 0x80   # MPIE = 0
 trap_vector_ret:
 	mret
-
-.globl set_minterrupt_vector_trap
-set_minterrupt_vector_trap:
-    la a0, trap_vector
-    #slli t0, t0, 1
-    csrw mtvec, a0
-    ret

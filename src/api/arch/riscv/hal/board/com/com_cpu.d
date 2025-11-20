@@ -25,6 +25,9 @@ size_t m_get_mvendorid() @trusted => __asm!size_t("csrr $0, mvendorid", "=r");
 size_t m_get_marchid() @trusted => __asm!size_t("csrr $0, marchid", "=r");
 size_t m_get_mimpid() @trusted => __asm!size_t("csrr $0, mimpid", "=r");
 
+void wfi(){
+    __asm("wfi", "");
+}
 
 void loadMisa()
 {
