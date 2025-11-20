@@ -31,13 +31,6 @@ else
     import MathFloat = api.core.math.math_core;
 }
 
-extern(C){
-    size_t get_bss_start();
-    size_t get_bss_end();
-    size_t get_heap_start();
-    size_t get_heap_end();
-}
-
 import api.core.io.cstdio;
 import api.core.thread.task;
 import api.core.timer;
@@ -101,30 +94,32 @@ extern (C) void dstart()
 
     Syslog.setLoad(true);
 
-    ubyte* bssStart = cast(ubyte*) get_bss_start;
-    ubyte* bssEnd = cast(ubyte*) get_bss_end;
+    // ubyte* bssStart = cast(ubyte*) get_bss_start;
+    // ubyte* bssEnd = cast(ubyte*) get_bss_end;
 
-    while (bssStart < bssEnd)
-    {
-        //TODO volatile
-        *bssStart++ = 0;
-    }
+    // while (bssStart < bssEnd)
+    // {
+    //     //TODO volatile
+    //     *bssStart++ = 0;
+    // }
 
     Syslog.info("Os start");
 
     trapInit;
     Syslog.info("Init traps");
 
-    auto heapStartAddr = cast(void*)(get_heap_start);
-    auto heapEndAddr = cast(void*)(get_heap_end);
+    // import MemoryHAL = api.arch.riscv.hal.memory;
 
-    Allocator.heapStartAddr = heapStartAddr;
-    Allocator.heapEndAddr = heapEndAddr;
+    // auto heapStartAddr = cast(void*)(MemoryHAL.get_heap_start);
+    // auto heapEndAddr = cast(void*)(MemoryHAL.get_heap_end);
 
-    BlockAllocator.initialize(heapStartAddr, heapEndAddr);
-    Allocator.allocFunc = &BlockAllocator.alloc;
-    Allocator.callocFunc = &BlockAllocator.calloc;
-    Allocator.freeFunc = &BlockAllocator.free;
+    // Allocator.heapStartAddr = heapStartAddr;
+    // Allocator.heapEndAddr = heapEndAddr;
+
+    // BlockAllocator.initialize(heapStartAddr, heapEndAddr);
+    // Allocator.allocFunc = &BlockAllocator.alloc;
+    // Allocator.callocFunc = &BlockAllocator.calloc;
+    // Allocator.freeFunc = &BlockAllocator.free;
 
     runTests;
 

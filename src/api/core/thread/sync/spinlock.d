@@ -3,7 +3,7 @@
  */
 module api.core.thread.sync.spinlock;
 
-import Externs = api.core.thread.externs;
+import Atomic = api.core.thread.atomic;
 
 struct Lock
 {
@@ -39,16 +39,16 @@ struct Lock
         return lockStatus == Status.unlock;
     }
 
-    void acquire() @safe
+    void acquire() @trusted
     {
         //TODO halt if locked
-        const ret = Externs.swap_acquire(&lockStatus);
+        const ret = Atomic.swapAcquire(&lockStatus);
         assert(ret);
     }
 
-    void release() @safe
+    void release() @trusted
     {
-        const ret = Externs.swap_release(&lockStatus);
+        const ret = Atomic.swapRelease(&lockStatus);
         assert(!ret);
     }
 }

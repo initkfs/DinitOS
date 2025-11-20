@@ -556,83 +556,9 @@ trap_save_context:
 trap_vector_ret:
 	mret
 
-.globl swap_acquire
-swap_acquire:
-    li t0, 1
-    lw t1, (a0)                 # Check if lock is held.
-    bnez t1, swap_acquire       # Retry if held.
-    amoswap.w.aq t1, t0, 0(a0)  # Attempt to acquire lock.
-    bnez t1, swap_acquire       # Retry if held.
-    mv a0, t0
-    ret
-.globl swap_release
-swap_release:
-    amoswap.w.rl x0, x0, 0(a0)
-    li a0, 0
-    ret
-#sw zero, (a0)
-
-.globl cas_lrsc
-# TODO check extension
-# a0 address of memory location
-# a1 expected
-# a2 desired
-# a0 return value, 1 if successful, 0 otherwise
-# TODO sequence sequentially
-cas_lrsc:
-    .ifdef rvSMP
-    fence rw, rw
-    .endif
-
-    .ifdef rv32
-    lr.w t0, (a0)          # Load original value.
-    .elseif rv64
-    lr.d t0, (a0)
-    .endif  
-
-    bne t0, a1, cas_lrsc_fail
-    
-    .ifdef rv32
-    sc.w t0, a2, (a0)      # try update
-    .elseif rv64
-    sc.d t0, a2, (a0)
-    .endif 
-    
-    bnez t0, cas_lrsc      # retry if failed
-    
-    .ifdef rvSMP
-    fence rw, rw
-    .endif
-
-    li a0, 1               # success
-    ret
-cas_lrsc_fail:
-    li a0, 0
-    ret
-
 .globl set_minterrupt_vector_trap
 set_minterrupt_vector_trap:
     la a0, trap_vector
     #slli t0, t0, 1
     csrw mtvec, a0
-    ret
-
-.globl get_bss_start
-get_bss_start:
-    la a0, _bss_start
-    ret
-
-.globl get_bss_end
-get_bss_end:
-    la a0, _bss_end
-    ret
-
-.globl get_heap_start
-get_heap_start:
-    la a0, _heap_start
-    ret
-
-.globl get_heap_end
-get_heap_end:
-    la a0, _heap_end
     ret
