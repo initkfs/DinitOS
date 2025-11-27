@@ -19,11 +19,11 @@ if [[ ! -d $scriptDir ]]; then
 fi
 #Start script
 
+shopt -s nullglob
+
 buildDir=$scriptDir/build
 sourceDir=$scriptDir/src
-bootSourceDir=$sourceDir/api/arch/riscv/boot
 
-bootFile=$buildDir/boot
 kernelFile=$buildDir/kernel
 kernelElf=${kernelFile}.elf
 kernelBin=${kernelFile}.bin
@@ -70,25 +70,17 @@ done
 set -- "${POSITIONAL_ARGS[@]}"
 
 dubConfigType=
-assemblyMarchType=
-assemblyMarchSymbol=
 linkerMarchType=
 emulator=
 
 case $archType in
   r32)
     dubConfigType=riscv32
-    assemblyMarchType=rv32i2p1_m2p0_a2p1_f2p2_c2p0
-    mabi=ilp32f
-    assemblyMarchSymbol=rv32
     linkerMarchType=elf32lriscv
     emulator=qemu-system-riscv32
     ;;
   r64)
     dubConfigType=riscv64
-    assemblyMarchType=rv64i2p1_m2p0_a2p1_f2p2_d2p2_c2p0
-    mabi=lp64d
-    assemblyMarchSymbol=rv64
     linkerMarchType=elf64lriscv
     emulator=qemu-system-riscv64
     ;;
@@ -102,7 +94,7 @@ if [[ "$isRelease" == "true" ]]; then
     dubConfigType="${dubConfigType}-release"
 fi
 
-echo "Build $buildType, arch: $archType, dub: $dubConfigType, asm: $assemblyMarchType"
+echo "Build $buildType, arch: $archType, dub: $dubConfigType"
 
 time dub --quiet build --compiler=ldc2 "--config=$dubConfigType" "--build=$buildType"
 if [[ $? -ne 0 ]]; then
@@ -118,13 +110,11 @@ riscvElfObjdump=
 
 if [[ $archType == "r32" ]]; then
      echo "Set toolchain for r32"
-     riscvElfAs=riscv32-unknown-elf-as
      riscvElfLd=riscv32-unknown-elf-ld
      riscvElfSize=riscv32-unknown-elf-size
      riscvElfObjcopy=riscv32-unknown-elf-objcopy
      riscvElfObjdump=riscv32-unknown-elf-objdump
 elif [[ $archType == "r64" ]]; then
-     riscvElfAs=riscv64-unknown-elf-as
      riscvElfLd=riscv64-unknown-elf-ld
      riscvElfSize=riscv64-unknown-elf-size
      riscvElfObjcopy=riscv64-unknown-elf-objcopy
@@ -134,14 +124,8 @@ else
     exit 1
 fi
 
-"$riscvElfAs" -march=$assemblyMarchType -mabi=$mabi  --defsym "$assemblyMarchSymbol"=1 "$bootSourceDir"/* -o "${bootFile}.o" -fno-pic -mno-relax
-if [[ $? -ne 0 ]]; then
-    echo "Boot build error" >&2
-    exit 1
-fi
-
 #https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
-"$riscvElfLd" --architecture "$assemblyMarchType" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/tool/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
+"$riscvElfLd" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/tool/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2
     exit 1
