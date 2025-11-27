@@ -7,6 +7,7 @@ import api.core.io.cstdio;
 
 import Syslog = api.core.log.syslog;
 import Critical = api.core.thread.critical;
+import ComContext = api.arch.riscv.hal.context;
 
 import ldc.attributes;
 import ldc.llvmasm;
@@ -109,9 +110,6 @@ extern (C) __gshared taskContextOffset = 0;
 
 private
 {
-    extern (C) void context_switch(RegContext* oldContext, RegContext* newContext);
-    extern (C) void context_save_task(RegContext* context);
-    extern (C) void context_load_task(RegContext* context);
     extern (C) void m_wait();
 }
 
@@ -185,8 +183,9 @@ extern (C) void switchToTask(Task* task)
     Critical.endCritical;
 
     showContext(&tasks[0].context);
-
-    context_switch(&(osTask.context), &(currentTask.context));
+    ComContext.saveContext(cast(size_t*) &(osTask.context));
+    ComContext.loadContext(cast(size_t*)&(currentTask.context));
+    //context_switch(&(osTask.context), &(currentTask.context));
 }
 
 extern (C) void showContext(RegContext* ctx)
@@ -309,12 +308,12 @@ void yield()
 
 extern (C) void saveCurrentTask()
 {
-    context_save_task(&currentTask.context);
+    ComContext.saveContext(cast(size_t*) &currentTask.context);
 }
 
 extern (C) void loadCurrentTask()
 {
-    context_load_task(&currentTask.context);
+    ComContext.loadContext(cast(size_t*) &currentTask.context);
 }
 
 extern (C) void switchToOs() @naked

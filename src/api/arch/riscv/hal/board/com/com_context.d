@@ -5,6 +5,54 @@ import ldc.attributes;
 
 version (Riscv32)
 {
+    extern (C) void saveContext(size_t* ctx) @optStrategy("none")
+    {
+        __asm("
+    sw ra, 0($0)      # 0
+    sw sp, 4($0)      # 4
+    sw gp, 8($0)      # 8
+    sw tp, 12($0)     # 12
+    
+    sw s0, 16($0)     # 16
+    sw s1, 20($0)     # 20
+    sw s2, 24($0)     # 24
+    sw s3, 28($0)     # 28
+    sw s4, 32($0)     # 32
+    sw s5, 36($0)     # 36
+    sw s6, 40($0)     # 40
+    sw s7, 44($0)     # 44
+    sw s8, 48($0)     # 48
+    sw s9, 52($0)     # 52
+    sw s10, 56($0)    # 56
+    sw s11, 60($0)    # 60
+    ", "{t0},~{t0}", ctx);
+    }
+
+    //freeze with @section(".text.init")
+    void loadContext(size_t* ctx) @naked @optStrategy("none")
+    {
+        __asm("
+    lw ra, 0(a0)      # 0
+    lw sp, 4(a0)      # 4
+    lw gp, 8(a0)      # 8
+    lw tp, 12(a0)     # 12
+    
+    lw s0, 16(a0)     # 16
+    lw s1, 20(a0)     # 20
+    lw s2, 24(a0)     # 24
+    lw s3, 28(a0)     # 28
+    lw s4, 32(a0)     # 32
+    lw s5, 36(a0)     # 36
+    lw s6, 40(a0)     # 40
+    lw s7, 44(a0)     # 44
+    lw s8, 48(a0)     # 48
+    lw s9, 52(a0)     # 52
+    lw s10, 56(a0)    # 56
+    lw s11, 60(a0)    # 60
+    ret
+    ", "");
+    }
+
     align(16) void switchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
@@ -138,6 +186,53 @@ com_trap_vector_ret:
 }
 else version (Riscv64)
 {
+    void saveContext(size_t* ctx) @optStrategy("none")
+    {
+        __asm("
+    sd ra, 0($0)      # 0
+    sd sp, 8($0)      # 8
+    sd gp, 16($0)     # 16
+    sd tp, 24($0)     # 24
+    
+    sd s0, 32($0)     # 32
+    sd s1, 40($0)     # 40
+    sd s2, 48($0)     # 48
+    sd s3, 56($0)     # 56
+    sd s4, 64($0)     # 64
+    sd s5, 72($0)     # 72
+    sd s6, 80($0)     # 80
+    sd s7, 88($0)     # 88
+    sd s8, 96($0)     # 96
+    sd s9, 104($0)    # 104
+    sd s10, 112($0)   # 112
+    sd s11, 120($0)   # 120
+    ", "{t0},~{t0}", ctx);
+    }
+
+    void loadContext(size_t* ctx) @naked @optStrategy("none")
+    {
+        __asm("
+    ld ra, 0(a0)      # 0
+    ld sp, 8(a0)      # 8
+    ld gp, 16(a0)     # 16
+    ld tp, 24(a0)     # 24
+    
+    ld s0, 32(a0)     # 32
+    ld s1, 40(a0)     # 40
+    ld s2, 48(a0)     # 48
+    ld s3, 56(a0)     # 56
+    ld s4, 64(a0)     # 64
+    ld s5, 72(a0)     # 72
+    ld s6, 80(a0)     # 80
+    ld s7, 88(a0)     # 88
+    ld s8, 96(a0)     # 96
+    ld s9, 104(a0)    # 104
+    ld s10, 112(a0)   # 112
+    ld s11, 120(a0)   # 120
+    ret
+    ", "");
+    }
+
     align(16) void switchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
