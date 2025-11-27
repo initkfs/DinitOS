@@ -117,9 +117,6 @@ set_minterrupt_vector_trap:
     csrw mtvec, a0
     ret
  */
-void set_minterrupt_vector_trap(){
-    __asm("
-    la a0, trap_vector
-    csrw mtvec, a0
-    ", "");
+void set_minterrupt_vector_trap(void function() handler){
+    __asm("csrw mtvec, $0", "r", handler);
 }

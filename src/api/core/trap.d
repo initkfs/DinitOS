@@ -20,7 +20,8 @@ import Syslog = api.core.log.syslog;
 
 void trapInit()
 {
-    Interrupts.set_minterrupt_vector_trap;
+    import ComContext = api.arch.riscv.hal.context;
+    Interrupts.set_minterrupt_vector_trap(&ComContext.switchInterruptContext);
 
     Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
 }
