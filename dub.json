@@ -3,9 +3,9 @@
         "initkfs"
     ],
     "copyright": "Copyright © 2023, initkfs",
-    "description": "Simple toy operating system.",
+    "description": "Experimental operating system for tiny RISC-V IoT devices",
     "license": "",
-    "name": "dinitos",
+    "name": "deuterios",
     "configurations": [
         {
             "name": "riscv32",
