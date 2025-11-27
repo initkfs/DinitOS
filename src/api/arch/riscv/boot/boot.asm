@@ -173,10 +173,14 @@ context_load_task:
 .globl trap_vector
 .align(16)
 trap_vector:
-   
     addi sp, sp, -16
+.ifdef rv32
     sw t0, 0(sp)
     sw t1, 4(sp)
+.elseif rv64
+    sd t0, 0(sp)
+    sd t1, 8(sp)
+.endif
 
 trap_check_cause:
     csrr t0, mcause
@@ -190,17 +194,21 @@ trap_check_cause:
 
 trap_save_context:
     la t0, currentTask
+.ifdef rv32
     lw t0, 0(t0)
+.elseif rv64
+    ld t0, 0(t0)
+.endif
     beqz t0, trap_vector_start
 
     la t1, osTask
     beq t0, t1, trap_vector_start
 
+.ifdef rv32
     sw ra, 0(t0)       # 0
     
     addi t1, sp, 16
-    sw t1, 4(t0)
-    #sw sp, 4(t0)      # 4  
+    sw t1, 4(t0)       # 4
     
     sw gp, 8(t0)       # 8
     sw tp, 12(t0)      # 12
@@ -228,12 +236,10 @@ trap_save_context:
     sw a7, 92(t0)      # 92
 
     lw t1, 0(sp)       # Restore t0
-    sw t1, 96(t0)      # save t0
-    #sw t0, 96(t0)     # 16
+    sw t1, 96(t0)      # 96 - save t0
 
-    lw t1, 4(sp)        # Restore t1 
-    sw t1, 100(t0)      # 20 - save t1
-    #sw t1, 100(t0)     # 20
+    lw t1, 4(sp)       # Restore t1 
+    sw t1, 100(t0)     # 100 - save t1
     
     sw t2, 104(t0)     # 104
     sw t3, 108(t0)     # 108
@@ -242,35 +248,80 @@ trap_save_context:
     sw t6, 120(t0)     # 120
 
     csrr t1, mepc
-    sw t1, 124(t0)  # 124
+    sw t1, 124(t0)     # 124
+.elseif rv64
+    sd ra, 0(t0)       # 0/0
+    
+    addi t1, sp, 16
+    sd t1, 8(t0)       # 4/8
+    
+    sd gp, 16(t0)      # 8/16
+    sd tp, 24(t0)      # 12/24
 
- trap_vector_start:  
+    sd s0, 32(t0)      # 16/32
+    sd s1, 40(t0)      # 20/40  
+    sd s2, 48(t0)      # 24/48
+    sd s3, 56(t0)      # 28/56
+    sd s4, 64(t0)      # 32/64
+    sd s5, 72(t0)      # 36/72
+    sd s6, 80(t0)      # 40/80
+    sd s7, 88(t0)      # 44/88
+    sd s8, 96(t0)      # 48/96
+    sd s9, 104(t0)     # 52/104
+    sd s10, 112(t0)    # 56/112
+    sd s11, 120(t0)    # 60/120
+    
+    sd a0, 128(t0)     # 64/128
+    sd a1, 136(t0)     # 68/136
+    sd a2, 144(t0)     # 72/144
+    sd a3, 152(t0)     # 76/152
+    sd a4, 160(t0)     # 80/160
+    sd a5, 168(t0)     # 84/168
+    sd a6, 176(t0)     # 88/176
+    sd a7, 184(t0)     # 92/184
 
+    ld t1, 0(sp)       # Restore t0
+    sd t1, 192(t0)     # 96/192 - save t0
+
+    ld t1, 8(sp)       # Restore t1 
+    sd t1, 200(t0)     # 100/200 - save t1
+    
+    sd t2, 208(t0)     # 104/208
+    sd t3, 216(t0)     # 108/216
+    sd t4, 224(t0)     # 112/224
+    sd t5, 232(t0)     # 116/232
+    sd t6, 240(t0)     # 120/240
+
+    csrr t1, mepc
+    sd t1, 248(t0)     # 124/248
+.endif
+
+trap_vector_start:  
+.ifdef rv32
     lw t1, 4(sp) 
     lw t0, 0(sp)
     addi sp, sp, 16
-
-.ifdef rv32
-    #addi sp, sp, -120
-    addi sp, sp, -128
 .elseif rv64
-    addi sp, sp, -240
+    ld t1, 8(sp) 
+    ld t0, 0(sp)
+    addi sp, sp, 16
 .endif
+
 	csrr	a0, mepc
 	csrr	a1, mcause
     csrr    a2, mtval
-	call	trap_handler #from kernel
+	call	trap_handler
 	csrw	mepc, a0
-.ifdef rv32
-    addi sp, sp, 128
-.elseif rv64
-    addi sp, sp, 240
-.endif
     
     la t0, currentTask
+.ifdef rv32
     lw t0, 0(t0)
+.elseif rv64
+    ld t0, 0(t0)
+.endif
     beqz t0, trap_vector_ret
 
+.ifdef rv32
     lw t1, 124(t0)     # 124 - mepc
     csrw mepc, t1
 
@@ -308,9 +359,46 @@ trap_save_context:
     lw gp, 8(t0)       # 8
     lw tp, 12(t0)      # 12
     
-    lw t0, 96(t0)      # 96, destroy context pointer
+    lw t0, 96(t0)      # 96
+.elseif rv64
+    ld t1, 248(t0)     # 124/248 - mepc
+    csrw mepc, t1
+
+    ld s0, 32(t0)      # 16/32
+    ld s1, 40(t0)      # 20/40
+    ld s2, 48(t0)      # 24/48
+    ld s3, 56(t0)      # 28/56
+    ld s4, 64(t0)      # 32/64
+    ld s5, 72(t0)      # 36/72
+    ld s6, 80(t0)      # 40/80
+    ld s7, 88(t0)      # 44/88
+    ld s8, 96(t0)      # 48/96
+    ld s9, 104(t0)     # 52/104
+    ld s10, 112(t0)    # 56/112
+    ld s11, 120(t0)    # 60/120
     
-    #csrci mstatus, 0x8    # MIE = 0
-    #csrci mstatus, 0x80   # MPIE = 0
+    ld a0, 128(t0)     # 64/128
+    ld a1, 136(t0)     # 68/136
+    ld a2, 144(t0)     # 72/144
+    ld a3, 152(t0)     # 76/152
+    ld a4, 160(t0)     # 80/160
+    ld a5, 168(t0)     # 84/168
+    ld a6, 176(t0)     # 88/176
+    ld a7, 184(t0)     # 92/184
+    
+    ld t1, 200(t0)     # 100/200
+    ld t2, 208(t0)     # 104/208
+    ld t3, 216(t0)     # 108/216
+    ld t4, 224(t0)     # 112/224
+    ld t5, 232(t0)     # 116/232
+    ld t6, 240(t0)     # 120/240
+    
+    ld ra, 0(t0)       # 0/0
+    ld sp, 8(t0)       # 4/8
+    ld gp, 16(t0)      # 8/16
+    ld tp, 24(t0)      # 12/24
+    
+    ld t0, 192(t0)     # 96/192
+.endif
 trap_vector_ret:
 	mret

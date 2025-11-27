@@ -119,9 +119,11 @@ else
     ret
 */
 
-bool swapAcquire(uint* lockPtr)
+version (Riscv32)
 {
-    return cast(bool) __asm!size_t("
+    bool swapAcquire(uint* lockPtr)
+    {
+        return cast(bool) __asm!size_t("
     swap_acquire:
     li t0, 1
     lw t1, ($1)                 # Check if lock is held.
@@ -130,6 +132,22 @@ bool swapAcquire(uint* lockPtr)
     bnez t1, swap_acquire       # Retry if held.
     mv $0, t0
     ", "=r,r,~{t0},~{t1}", lockPtr);
+    }
+}
+else version (Riscv64)
+{
+    bool swapAcquire(ulong* lockPtr)
+    {
+        return cast(bool) __asm!size_t("
+    swap_acquire:
+    li t0, 1
+    ld t1, ($1)                 # Check if lock is held.
+    bnez t1, swap_acquire       # Retry if held.
+    amoswap.d.aq t1, t0, 0($1)  # Attempt to acquire lock.
+    bnez t1, swap_acquire       # Retry if held.
+    mv $0, t0
+    ", "=r,r,~{t0},~{t1}", lockPtr);
+    }
 }
 
 /*
@@ -139,10 +157,23 @@ swap_release:
     li a0, 0
     ret
  */
-bool swapRelease(uint* lockPtr)
+version (Riscv32)
 {
-    return cast(bool) __asm!size_t("
+    bool swapRelease(uint* lockPtr)
+    {
+        return cast(bool) __asm!size_t("
        amoswap.w.rl x0, x0, 0($1)
        li $0, 0
     ", "=r,r", lockPtr);
+    }
+}
+else version (Riscv64)
+{
+    bool swapRelease(ulong* lockPtr)
+    {
+        return cast(bool) __asm!size_t("
+       amoswap.d.rl x0, x0, 0($1)
+       li $0, 0
+    ", "=r,r", lockPtr);
+    }
 }

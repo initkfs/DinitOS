@@ -82,7 +82,7 @@ void loadMisa()
 
 string vendorId()
 {
-    int id = m_get_mvendorid();
+    auto id = m_get_mvendorid();
     if (id == 0)
     {
         return "";
