@@ -20,25 +20,42 @@ alias reg_t = size_t;
 
 extern (C) struct RegContext
 {
-    reg_t ra;
-    reg_t sp;
-    //saved
-    reg_t s0;
-    reg_t s1;
-    reg_t s2;
-    reg_t s3;
-    reg_t s4;
-    reg_t s5;
-    reg_t s6;
-    reg_t s7;
-    reg_t s8;
-    reg_t s9;
-    reg_t s10;
-    reg_t s11;
+    reg_t ra; // 0
+    reg_t sp; // 4
+    reg_t gp; // 8
+    reg_t tp; // 12
 
-    reg_t mepc;
-    reg_t mstatus;
-    reg_t mcause;
+    reg_t s0; // 16
+    reg_t s1; // 20
+    reg_t s2; // 24
+    reg_t s3; // 28
+    reg_t s4; // 32
+    reg_t s5; // 36
+    reg_t s6; // 40
+    reg_t s7; // 44
+    reg_t s8; // 48
+    reg_t s9; // 52
+    reg_t s10; // 56
+    reg_t s11; // 60
+
+    reg_t a0; // 64
+    reg_t a1; // 68
+    reg_t a2; // 72
+    reg_t a3; // 76
+    reg_t a4; // 80
+    reg_t a5; // 84
+    reg_t a6; // 88
+    reg_t a7; // 92
+
+    reg_t t0; // 96
+    reg_t t1; // 100
+    reg_t t2; // 104
+    reg_t t3; // 108
+    reg_t t4; // 112
+    reg_t t5; // 116
+    reg_t t6; // 120
+
+    reg_t mepc; // 124
 }
 
 //static assert(RegContext.sizeof == (14 * size_t.sizeof), "Wrong context size");
